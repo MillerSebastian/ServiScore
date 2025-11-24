@@ -18,6 +18,7 @@ export function Navbar() {
     { href: "/stores", label: t("nav.stores"), icon: Star },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
+    {href : "/login", label: t("nav.login"), icon: User }
   ]
 
   return (

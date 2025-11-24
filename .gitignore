@@ -1,0 +1,18 @@
+# .gitignore
+# Ignorar la carpeta de build/cache de Next.js
+.next/
+
+# Ignorar dependencias instaladas
+node_modules/
+
+# Ignorar archivos de variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Ignorar archivos de lock o directorios temporales comunes (opcional)
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
