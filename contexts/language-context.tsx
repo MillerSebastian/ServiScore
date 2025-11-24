@@ -17,6 +17,7 @@ const translations = {
     "nav.stores": "Stores",
     "nav.services": "Services",
     "nav.profile": "Profile",
+    "nav.login": "Login",
     "home.hero.title": "Discover & Connect",
     "home.hero.subtitle":
       "Your community hub for finding the best local businesses and connecting with skilled neighbors.",
@@ -69,6 +70,7 @@ const translations = {
     "nav.stores": "Tiendas",
     "nav.services": "Servicios",
     "nav.profile": "Perfil",
+    "nav.login": "Iniciar Sesión",
     "home.hero.title": "Descubre y Conecta",
     "home.hero.subtitle":
       "Tu centro comunitario para encontrar los mejores negocios locales y conectar con vecinos talentosos.",

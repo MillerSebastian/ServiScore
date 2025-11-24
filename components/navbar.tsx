@@ -37,7 +37,11 @@ export function Navbar() {
                   href={item.href}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-primary font-bold" : "text-muted-foreground",
+                    item.href === "/login"
+                      ? "text-muted-foreground" // Login nunca azul fijo
+                      : pathname === item.href
+                      ? "text-primary font-bold"
+                      : "text-muted-foreground"
                   )}
                 >
                   {item.label}
