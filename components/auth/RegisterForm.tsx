@@ -1,11 +1,10 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { ModeToggle } from "@/components/mode-toggle"
 
 import { useRouter } from "next/navigation"
 
@@ -25,7 +24,10 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
     return (
         <div className="w-full max-w-sm space-y-6">
             <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-foreground">Create an account</h2>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-3xl font-bold text-foreground">Create an account</h2>
+                    <ModeToggle />
+                </div>
                 <p className="text-muted-foreground">Already have an account? <button onClick={onToggle} className="text-primary hover:text-primary/80">Log in</button></p>
             </div>
             <form className="space-y-4" onSubmit={handleSubmit}>
