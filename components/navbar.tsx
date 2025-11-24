@@ -18,8 +18,10 @@ export function Navbar() {
     { href: "/stores", label: t("nav.stores"), icon: Star },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
-    {href : "/login", label: t("nav.login"), icon: User }
+    { href: "/login", label: t("nav.login"), icon: User }
   ]
+
+  if (pathname === "/login") return null
 
   return (
     <>
@@ -40,8 +42,8 @@ export function Navbar() {
                     item.href === "/login"
                       ? "text-muted-foreground" // Login nunca azul fijo
                       : pathname === item.href
-                      ? "text-primary font-bold"
-                      : "text-muted-foreground"
+                        ? "text-primary font-bold"
+                        : "text-muted-foreground"
                   )}
                 >
                   {item.label}
