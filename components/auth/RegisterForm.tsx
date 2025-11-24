@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Languages } from "lucide-react"
 import { useState } from "react"
 import { ModeToggle } from "@/components/mode-toggle"
+import { useLanguage } from "@/contexts/language-context"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 import { useRouter } from "next/navigation"
 
@@ -15,6 +17,7 @@ interface RegisterFormProps {
 export function RegisterForm({ onToggle }: RegisterFormProps) {
     const [showPassword, setShowPassword] = useState(false)
     const router = useRouter()
+    const { t, language, setLanguage } = useLanguage()
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -25,45 +28,63 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
         <div className="w-full max-w-sm space-y-6">
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold text-foreground">Create an account</h2>
-                    <ModeToggle />
+                    <h2 className="text-3xl font-bold text-foreground">{t("auth.createAccount")}</h2>
+                    <div className="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Languages className="h-[1.2rem] w-[1.2rem]" />
+                                    <span className="sr-only">Switch Language</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : ""}>
+                                    English
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : ""}>
+                                    Español
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <ModeToggle />
+                    </div>
                 </div>
-                <p className="text-muted-foreground">Already have an account? <button onClick={onToggle} className="text-primary hover:text-primary/80">Log in</button></p>
+                <p className="text-muted-foreground">{t("auth.register.subtitle")} <button onClick={onToggle} className="text-primary hover:text-primary/80">{t("auth.login")}</button></p>
             </div>
             <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="firstName">First name</Label>
+                        <Label htmlFor="firstName">{t("auth.firstName")}</Label>
                         <Input
                             id="firstName"
-                            placeholder="First name"
+                            placeholder={t("auth.firstName")}
                             className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="lastName">Last name</Label>
+                        <Label htmlFor="lastName">{t("auth.lastName")}</Label>
                         <Input
                             id="lastName"
-                            placeholder="Last name"
+                            placeholder={t("auth.lastName")}
                             className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
                         />
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t("auth.email")}</Label>
                     <Input
                         id="email"
-                        placeholder="Enter your email"
+                        placeholder={t("auth.email")}
                         type="email"
                         className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t("auth.password")}</Label>
                     <div className="relative">
                         <Input
                             id="password"
-                            placeholder="Enter your password"
+                            placeholder={t("auth.password")}
                             type={showPassword ? "text" : "password"}
                             className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12 pr-10"
                         />
@@ -82,11 +103,11 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
                         htmlFor="terms"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
                     >
-                        I agree to the <a href="#" className="text-primary hover:text-primary/80">Terms & Conditions</a>
+                        {t("auth.agree")} <a href="#" className="text-primary hover:text-primary/80">{t("auth.terms")}</a>
                     </label>
                 </div>
                 <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-lg">
-                    Create account
+                    {t("auth.createAccount")}
                 </Button>
             </form>
 
@@ -95,7 +116,7 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
                     <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or register with</span>
+                    <span className="bg-card px-2 text-muted-foreground">{t("auth.orRegister")}</span>
                 </div>
             </div>
 
@@ -119,13 +140,13 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
                             fill="#EA4335"
                         />
                     </svg>
-                    Google
+                    {t("auth.google")}
                 </Button>
                 <Button variant="outline" className="bg-transparent border-border text-foreground hover:bg-muted hover:text-foreground h-12">
                     <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.78 1.18-.19 2.31-.89 3.51-.84 1.54.06 2.74.56 3.69 1.62-3.3 1.97-2.71 5.73.26 6.98-.67 1.72-1.61 3.38-2.54 4.43zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                     </svg>
-                    Apple
+                    {t("auth.apple")}
                 </Button>
             </div>
         </div>

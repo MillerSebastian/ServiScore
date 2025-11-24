@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from "framer-motion"
 import { LoginForm } from "./LoginForm"
 import { RegisterForm } from "./RegisterForm"
 import Image from "next/image"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true)
+    const { t } = useLanguage()
 
     const toggleAuth = () => setIsLogin(!isLogin)
 
@@ -44,28 +46,24 @@ export default function AuthPage() {
                             >
                                 <Image
                                     src={isLogin ? "/loginimg.jpg" : "/loginimg2.jpg"}
-                                    alt="Authentication Background"
+                                    alt="Auth Background"
                                     fill
                                     className="object-cover"
                                     priority
                                 />
                             </motion.div>
                         </AnimatePresence>
-                        <div className="absolute inset-0 bg-purple-900/40 mix-blend-overlay" />
-                        <div className="absolute inset-0 flex flex-col justify-between p-8 text-white">
+
+                        <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-8 text-white">
                             <div className="flex justify-between items-center">
                                 <span className="text-2xl font-bold">ServiScore</span>
-                                <button onClick={toggleAuth} className="text-sm bg-white/20 backdrop-blur-md px-4 py-2 rounded-full hover:bg-white/30 transition">
-                                    {isLogin ? "Create an account" : "Back to login"} &rarr;
+                                <button onClick={toggleAuth} className="text-sm bg-white/20 backdrop-blur-md px-4 py-2 rounded-full hover:bg-white/30 transition flex items-center gap-2">
+                                    {isLogin ? t("auth.createAccount") : t("auth.login")} &rarr;
                                 </button>
                             </div>
                             <div>
-                                <h2 className="text-4xl font-bold mb-2">Capturing Moments,<br />Creating Memories</h2>
-                                <div className="flex gap-2 mt-4">
-                                    <div className="w-8 h-1 bg-white rounded-full" />
-                                    <div className="w-2 h-1 bg-white/50 rounded-full" />
-                                    <div className="w-2 h-1 bg-white/50 rounded-full" />
-                                </div>
+                                <h2 className="text-3xl font-bold mb-2">{t("auth.overlay.title")}</h2>
+                                <p className="text-lg opacity-90">{t("auth.overlay.subtitle")}</p>
                             </div>
                         </div>
                     </div>
@@ -74,3 +72,4 @@ export default function AuthPage() {
         </div>
     )
 }
+
