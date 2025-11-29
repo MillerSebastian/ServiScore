@@ -41,7 +41,7 @@ const topics = [
 
 export default function SupportSection() {
     return (
-        <section className="relative min-h-screen flex flex-col items-center justify-center py-20 overflow-hidden bg-[#0a0a0a] text-white">
+        <section id="support" className="relative min-h-screen flex flex-col items-center justify-center py-20 overflow-hidden bg-[#0a0a0a] text-white">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-black/80 z-10" />

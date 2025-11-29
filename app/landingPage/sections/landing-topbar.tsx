@@ -1,10 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 
 export default function LandingTopbar() {
+    const navLinks = [
+        { name: "Features", href: "#features" },
+        { name: "Benefits", href: "#benefits" },
+        { name: "About", href: "#about" },
+        { name: "Testimonials", href: "#testimonials" },
+        { name: "Support", href: "#support" },
+    ]
+
     return (
         <motion.header
             initial={{ opacity: 0, y: -20 }}
@@ -14,12 +21,21 @@ export default function LandingTopbar() {
         >
             <div className="container mx-auto flex items-center justify-between">
                 <Link href="/landingPage" className="flex items-center gap-2">
-                    <span className="text-2xl font-bold tracking-tight text-white">ServiScore</span>
+                    <span className="text-2xl font-bold tracking-tight text-white">SS</span>
                 </Link>
 
-                <Button asChild className="rounded-full bg-white text-black hover:bg-gray-200 transition-all font-medium px-6">
-                    <Link href="/login">Get Started</Link>
-                </Button>
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center gap-8">
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.name}
+                            href={link.href}
+                            className="text-sm font-medium text-white/80 transition-colors hover:text-white"
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                </div>
             </div>
         </motion.header>
     )
