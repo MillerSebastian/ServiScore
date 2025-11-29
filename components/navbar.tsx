@@ -21,7 +21,7 @@ export function Navbar() {
     { href: "/login", label: t("nav.login"), icon: User }
   ]
 
-  if (pathname === "/login") return null
+  if (pathname === "/login" || pathname?.startsWith("/landingPage")) return null
 
   return (
     <>
