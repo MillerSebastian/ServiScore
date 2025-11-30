@@ -18,10 +18,11 @@ export function Navbar() {
     { href: "/stores", label: t("nav.stores"), icon: Star },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
-    { href: "/login", label: t("nav.login"), icon: User }
+    { href: "/login", label: t("nav.login"), icon: User },
+    { href: "/shopAuth", label: t("nav.shopLogin"), icon: User }
   ]
 
-  if (pathname === "/login" || pathname?.startsWith("/landingPage")) return null
+  if (pathname === "/login" || pathname === "/shopAuth" || pathname?.startsWith("/landingPage")) return null
 
   return (
     <>
