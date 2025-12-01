@@ -1,6 +1,7 @@
 import Hero from "./sections/hero"
 import About from "./sections/about"
 import Footer from "./sections/footer"
+import GlobalReach from "./sections/globalReach"
 
 import LandingTopbar from "./sections/landing-topbar"
 import SupportSection from "./sections/supportSection"
@@ -12,6 +13,7 @@ export default function LandingPage() {
             <Hero />
             <About />
             <SupportSection />
+            <GlobalReach />
             <Footer />
         </main>
     )
