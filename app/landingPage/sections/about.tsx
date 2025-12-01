@@ -39,7 +39,7 @@ const features = [
 
 export default function About() {
     return (
-        <section className="py-24 bg-[#0a0a0a] text-white overflow-hidden">
+        <section id="about" className="py-24 bg-[#0a0a0a] text-white overflow-hidden">
             <div className="container mx-auto px-6">
 
                 {/* Section Header */}
