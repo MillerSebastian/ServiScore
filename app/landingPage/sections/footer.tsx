@@ -2,6 +2,7 @@
 
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function Footer() {
     return (
@@ -9,11 +10,35 @@ export default function Footer() {
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                     {/* Brand */}
-                    <div className="col-span-1 md:col-span-2">
+                    <div className="col-span-1">
                         <h2 className="text-2xl font-bold mb-4">ServiScore</h2>
                         <p className="text-gray-400 max-w-sm">
                             Empowering local businesses and connecting communities through innovative digital solutions.
                         </p>
+                    </div>
+
+                    {/* Team / Credits */}
+                    <div className="col-span-1">
+                        <div className="mb-4">
+                            <Image
+                                src="/landindPictures/Logo_White_Riwi.svg"
+                                alt="Riwi Logo"
+                                width={100}
+                                height={40}
+                                className="mb-2"
+                            />
+                            <p className="text-sm text-gray-400 font-medium">
+                                Creado por equipo apasionado de Riwi
+                            </p>
+                        </div>
+                        <ul className="space-y-1 text-sm text-gray-500">
+                            <li>Sebastian Rodelo - Product Owner</li>
+                            <li>Santiago Lopez - Frontend Developer</li>
+                            <li>Maria Almeira - Backend Developer</li>
+                            <li>Kelmin Martinez - Backend Developer</li>
+                            <li>Keshia - Scrum Master</li>
+                            <li>Alex - Analista de Datos</li>
+                        </ul>
                     </div>
 
                     {/* Links */}
