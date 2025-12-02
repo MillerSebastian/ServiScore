@@ -13,6 +13,8 @@ import { useState, useEffect } from "react"
 import ChatbaseWidget from "@/components/ChatbaseWidget";
 import { Skeleton } from "@/components/ui/skeleton"
 
+
+
 export default function HomePage() {
   const stores = useSelector((state: RootState) => state.stores.items)
   const services = useSelector((state: RootState) => state.services.items)
