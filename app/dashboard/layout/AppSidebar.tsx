@@ -1,23 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-// Assume these icons are imported from an icon library
 import {
-  BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
-  GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
-} from "../icons";
+  Box,
+  Calendar,
+  ChevronDown,
+  LayoutGrid,
+  MoreHorizontal,
+  List,
+  FileText,
+  PieChart,
+  Plug,
+  Table,
+  CircleUser,
+} from "lucide-react";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
+import Button from "../components/ui/button/Button";
 
 type NavItem = {
   name: string;
@@ -28,12 +27,12 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
+    icon: <LayoutGrid />,
     name: "Dashboard",
     path: "/",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <CircleUser />,
     name: "Workers",
     subItems: [
       { name: "Dentists", path: "/workers/dentists", pro: false },
@@ -41,17 +40,17 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <CircleUser />,
     name: "Patients",
     path: "/patients",
   },
   {
-    icon: <CalenderIcon />,
+    icon: <Calendar />,
     name: "Appointments",
     path: "/appointments",
   },
   {
-    icon: <TableIcon />,
+    icon: <Table />,
     name: "Treatments",
     path: "/treatments",
   },
@@ -59,16 +58,16 @@ const navItems: NavItem[] = [
 
 const othersItems: NavItem[] = [
   {
-    icon: <UserCircleIcon />,
+    icon: <CircleUser />,
     name: "Profile",
     path: "/profile",
   },
   {
-    icon: <PlugInIcon />,
+    icon: <Plug />,
     name: "Authentication",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
+      { name: "Sign In", path: "/login", pro: false },
+      { name: "Sign Up", path: "/login", pro: false },
     ],
   },
 ];
@@ -146,54 +145,54 @@ const AppSidebar: React.FC = () => {
       {items.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
-            <button
+            <Button
+              variant="ghost"
               onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                ? "menu-item-active"
-                : "menu-item-inactive"
-                } cursor-pointer ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "lg:justify-start"
+              className={`w-full justify-center group ${openSubmenu?.type === menuType && openSubmenu?.index === index
+                ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
+                : ""
                 }`}
             >
               <span
-                className={`menu-item-icon-size  ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-icon-active"
-                  : "menu-item-icon-inactive"
+                className={`${openSubmenu?.type === menuType && openSubmenu?.index === index
+                  ? "text-brand-500 dark:text-brand-400"
+                  : "text-gray-500 group-hover:text-gray-700 dark:text-white"
                   }`}
               >
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.name}</span>
+                <>
+                  <span className="menu-item-text ml-3">{nav.name}</span>
+                  <ChevronDown
+                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.type === menuType &&
+                      openSubmenu?.index === index
+                      ? "rotate-180 text-brand-500"
+                      : ""
+                      }`}
+                  />
+                </>
               )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.type === menuType &&
-                    openSubmenu?.index === index
-                    ? "rotate-180 text-brand-500"
-                    : ""
-                    }`}
-                />
-              )}
-            </button>
+            </Button>
           ) : (
             nav.path && (
               <Link
                 href={nav.path}
-                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                className={`inline-flex items-center justify-center gap-2 rounded-lg transition px-5 py-3.5 text-sm w-full group ${isActive(nav.path)
+                  ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
+                  : "bg-transparent text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
                   }`}
               >
                 <span
-                  className={`menu-item-icon-size ${isActive(nav.path)
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
+                  className={`${isActive(nav.path)
+                    ? "text-brand-500 dark:text-brand-400"
+                    : "text-gray-500 group-hover:text-gray-700 dark:text-white"
                     }`}
                 >
                   {nav.icon}
                 </span>
                 {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
+                  <span className="menu-item-text ml-3">{nav.name}</span>
                 )}
               </Link>
             )
@@ -216,9 +215,9 @@ const AppSidebar: React.FC = () => {
                   <li key={subItem.name}>
                     <Link
                       href={subItem.path}
-                      className={`menu-dropdown-item ${isActive(subItem.path)
-                        ? "menu-dropdown-item-active"
-                        : "menu-dropdown-item-inactive"
+                      className={`inline-flex items-center gap-2 rounded-lg transition px-4 py-2 text-sm w-full group ${isActive(subItem.path)
+                        ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
+                        : "bg-transparent text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
                         }`}
                     >
                       {subItem.name}
@@ -306,30 +305,24 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 justify-center`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"
                 ) : (
-                  <HorizontaLDots className="size-6" />
+                  <MoreHorizontal className="size-6" />
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
             <div className="">
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 justify-center`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Others"
                 ) : (
-                  <HorizontaLDots />
+                  <MoreHorizontal />
                 )}
               </h2>
               {renderMenuItems(othersItems, "others")}
