@@ -12,6 +12,7 @@ import { motion } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
 import ChatbaseWidget from "@/components/ChatbaseWidget";
 
+
 export default function StoresPage() {
   const stores = useSelector((state: RootState) => state.stores.items)
   const [isLoading, setIsLoading] = useState(true)
