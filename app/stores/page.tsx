@@ -10,6 +10,7 @@ import Link from "next/link"
 import { AddStoreModal } from "@/components/add-store-modal"
 import { motion } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
+import ChatbaseWidget from "@/components/ChatbaseWidget";
 
 export default function StoresPage() {
   const stores = useSelector((state: RootState) => state.stores.items)
@@ -53,7 +54,9 @@ export default function StoresPage() {
           <AddStoreModal />
         </div>
       </div>
-
+      <>
+        <ChatbaseWidget />
+      </>
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (

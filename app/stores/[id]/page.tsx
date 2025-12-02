@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { Skeleton } from "@/components/ui/skeleton"
 
+
 export default function StoreDetailPage() {
   const params = useParams()
   const dispatch = useDispatch()
@@ -227,7 +228,7 @@ export default function StoreDetailPage() {
             </div>
           </section>
         </div>
-
+  
         {/* Sidebar */}
         <div className="space-y-6">
           <div className="bg-card text-card-foreground p-6 rounded-2xl shadow-soft border border-border/50 sticky top-24">
@@ -264,5 +265,6 @@ export default function StoreDetailPage() {
         </div>
       </div>
     </div>
+    
   )
 }
