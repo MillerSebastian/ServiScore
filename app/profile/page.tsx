@@ -8,6 +8,7 @@ import { Star, Briefcase, Settings, LogOut } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import ChatbaseWidget from "@/components/ChatbaseWidget";
 
 export default function ProfilePage() {
   const user = useSelector((state: RootState) => state.auth.user)
@@ -48,7 +49,9 @@ export default function ProfilePage() {
               </Button>
             </div>
           </div>
-
+          <>
+            <ChatbaseWidget />
+          </>
           <div>
             {isLoading ? (
               <div className="space-y-2 mb-4">
