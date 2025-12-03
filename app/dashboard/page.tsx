@@ -4,6 +4,8 @@ import type { RootState } from "@/lib/store";
 import PageMeta from "./components/common/PageMeta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Store, ShoppingBag, Users } from "lucide-react";
+import { MonthlyLineChart, ActivityRadarChart, ScatterChart } from "./components/Charts";
+import Clock from "./components/common/Clock";
 
 export default function DashboardPage() {
     const { items: stores } = useSelector((state: RootState) => state.stores);
@@ -38,6 +40,7 @@ export default function DashboardPage() {
                 description="ServiScore Admin Dashboard"
             />
             <div className="space-y-6">
+                <Clock />
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {stats.map((stat, index) => (
                         <Card key={index}>
@@ -103,6 +106,35 @@ export default function DashboardPage() {
                                     </div>
                                 ))}
                             </div>
+                        </CardContent>
+                    </Card>
+
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <Card className="col-span-4">
+                        <CardHeader>
+                            <CardTitle>Monthly Overview</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pl-2">
+                            <MonthlyLineChart />
+                        </CardContent>
+                    </Card>
+                    <Card className="col-span-3">
+                        <CardHeader>
+                            <CardTitle>Activity Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ActivityRadarChart />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <Card className="col-span-4">
+                        <CardHeader>
+                            <CardTitle>Scatter Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ScatterChart />
                         </CardContent>
                     </Card>
                 </div>
