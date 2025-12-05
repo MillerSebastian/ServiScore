@@ -18,7 +18,11 @@ export function Navbar() {
     { href: "/stores", label: t("nav.stores"), icon: Star },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
+    { href: "/login", label: t("nav.login"), icon: User },
+    { href: "/shopAuth", label: t("nav.shopLogin"), icon: User }
   ]
+
+  if (pathname === "/login" || pathname === "/shopAuth" || pathname?.startsWith("/landingPage")) return null
 
   return (
     <>
@@ -36,7 +40,11 @@ export function Navbar() {
                   href={item.href}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-primary font-bold" : "text-muted-foreground",
+                    item.href === "/login"
+                      ? "text-muted-foreground" // Login nunca azul fijo
+                      : pathname === item.href
+                        ? "text-primary font-bold"
+                        : "text-muted-foreground"
                   )}
                 >
                   {item.label}

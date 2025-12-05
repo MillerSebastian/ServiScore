@@ -10,6 +10,14 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { Skeleton } from "@/components/ui/skeleton"
+import ChatbaseWidget from "@/components/ChatbaseWidget";
+import dynamic from "next/dynamic";
+
+// 👇 Importación dinámica para evitar errores de SSR
+const Map = dynamic(() => import("@/components/Map"), {
+  ssr: false,
+});
+
 
 export default function StoreDetailPage() {
   const params = useParams()
@@ -171,7 +179,9 @@ export default function StoreDetailPage() {
                 </div>
               </div>
             </div>
-
+          <>
+          <ChatbaseWidget />
+          </>
             {/* Comments List */}
             <div className="space-y-6">
               {store.comments.map((comment) => (
@@ -227,13 +237,13 @@ export default function StoreDetailPage() {
             </div>
           </section>
         </div>
-
+  
         {/* Sidebar */}
         <div className="space-y-6">
           <div className="bg-card text-card-foreground p-6 rounded-2xl shadow-soft border border-border/50 sticky top-24">
             <h3 className="font-bold mb-4">{t("store.locationHours")}</h3>
             <div className="aspect-video bg-muted rounded-lg mb-4 flex items-center justify-center text-muted-foreground text-sm">
-              Map Placeholder
+            <Map />
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
@@ -264,5 +274,6 @@ export default function StoreDetailPage() {
         </div>
       </div>
     </div>
+    
   )
 }
