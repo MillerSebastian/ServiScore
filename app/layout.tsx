@@ -5,6 +5,7 @@ import "./globals.css"
 import { Providers } from "./providers"
 import { Navbar } from "@/components/navbar"
 
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -13,14 +14,14 @@ export const metadata: Metadata = {
     generator: 'v0.app'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-background text-foreground min-h-screen flex flex-col`}>
+    <html lang="en" suppressHydrationWarning>
+      <body>
         <Providers>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0">{children}</main>
@@ -29,3 +30,4 @@ export default function RootLayout({
     </html>
   )
 }
+
