@@ -39,7 +39,7 @@ export default function ProfilePage() {
               const profile = await authService.getProfile(idToken)
               setUser(profile)
             } else {
-              router.push("/auth")
+              router.push("/login")
             }
             unsubscribe()
           })
@@ -57,7 +57,7 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try {
       await authService.logout()
-      router.push("/auth")
+      router.push("/login")
     } catch (error) {
       console.error("Logout failed", error)
     }
