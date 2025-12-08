@@ -5,12 +5,15 @@ import "./globals.css"
 import { Providers } from "./providers"
 import { Navbar } from "@/components/navbar"
 
+
+import { AuthGuard } from "@/components/auth/AuthGuard"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "ServiScore",
   description: "Community Marketplace & Store Ratings",
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -22,8 +25,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-background text-foreground min-h-screen flex flex-col`}>
         <Providers>
-          <Navbar />
-          <main className="flex-1 pb-20 md:pb-0">{children}</main>
+          <AuthGuard>
+            <Navbar />
+            <main className="flex-1 pb-20 md:pb-0">{children}</main>
+          </AuthGuard>
         </Providers>
       </body>
     </html>

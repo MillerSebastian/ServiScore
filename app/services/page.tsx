@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { PostServiceModal } from "@/components/post-service-modal"
 import { motion } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
+import ChatbaseWidget from "@/components/ChatbaseWidget";
 
 export default function ServicesPage() {
   const services = useSelector((state: RootState) => state.services.items)
@@ -39,6 +40,8 @@ export default function ServicesPage() {
   }
 
   return (
+
+    
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
         <div>
@@ -52,7 +55,9 @@ export default function ServicesPage() {
           <PostServiceModal />
         </div>
       </div>
-
+      <>
+        <ChatbaseWidget />
+      </>
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((i) => (
