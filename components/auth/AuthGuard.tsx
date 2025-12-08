@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 const PUBLIC_ROUTES = [
     "/login",
-    "/shopAuth",
+    "/adminAuth",
     "/landing",
     "/about",
     "/contact"

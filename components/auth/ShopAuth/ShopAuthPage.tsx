@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ShopLoginForm } from "./ShopLoginForm"
-import { ShopRegisterForm } from "./ShopRegisterForm"
+import { AdminLoginForm } from "./AdminLoginForm"
+import { AdminRegisterForm } from "./AdminRegisterForm"
 import Image from "next/image"
 import { useLanguage } from "@/contexts/language-context"
 
-export default function ShopAuthPage() {
+export default function AdminAuthPage() {
     const [isLogin, setIsLogin] = useState(true)
     const { t } = useLanguage()
 
@@ -19,12 +19,12 @@ export default function ShopAuthPage() {
 
                 {/* Register Form (Left Side) */}
                 <div className="w-1/2 h-full flex items-center justify-center p-8">
-                    <ShopRegisterForm onToggle={toggleAuth} />
+                    <AdminRegisterForm onToggle={toggleAuth} />
                 </div>
 
                 {/* Login Form (Right Side) */}
                 <div className="w-1/2 h-full flex items-center justify-center p-8">
-                    <ShopLoginForm onToggle={toggleAuth} />
+                    <AdminLoginForm onToggle={toggleAuth} />
                 </div>
 
                 {/* Sliding Overlay (Image) */}
@@ -56,14 +56,14 @@ export default function ShopAuthPage() {
 
                         <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-8 text-white">
                             <div className="flex justify-between items-center">
-                                <span className="text-2xl font-bold">{t("auth.shop.title")}</span>
+                                <span className="text-2xl font-bold">ServiScore Admin</span>
                                 <button onClick={toggleAuth} className="text-sm bg-white/20 backdrop-blur-md px-4 py-2 rounded-full hover:bg-white/30 transition flex items-center gap-2">
-                                    {isLogin ? t("auth.createAccount") : t("auth.login")} &rarr;
+                                    {isLogin ? "Create Account" : "Login"} &rarr;
                                 </button>
                             </div>
                             <div>
-                                <h2 className="text-3xl font-bold mb-2">{isLogin ? t("auth.shop.welcomeBack") : t("auth.shop.joinNetwork")}</h2>
-                                <p className="text-lg opacity-90">{isLogin ? t("auth.shop.manageStore") : t("auth.shop.registerStore")}</p>
+                                <h2 className="text-3xl font-bold mb-2">{isLogin ? "Welcome Back!" : "Join Admin Network"}</h2>
+                                <p className="text-lg opacity-90">{isLogin ? "Manage your admin dashboard" : "Register as an administrator"}</p>
                             </div>
                         </div>
                     </div>
