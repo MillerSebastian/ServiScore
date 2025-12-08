@@ -4,34 +4,67 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Languages, Upload } from "lucide-react"
+import { Eye, EyeOff, Languages } from "lucide-react"
 import { useState } from "react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { useLanguage } from "@/contexts/language-context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
+import { adminService } from "@/lib/services/admin.service"
+import { RegisterAdminDto } from "@/lib/types/admin.types"
+import { authService } from "@/lib/services/auth.service"
 
-interface ShopRegisterFormProps {
+interface AdminRegisterFormProps {
     onToggle: () => void
 }
 
-export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
+export function AdminRegisterForm({ onToggle }: AdminRegisterFormProps) {
     const [showPassword, setShowPassword] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
     const { t, language, setLanguage } = useLanguage()
+
+    // Form state
+    const [fullName, setFullName] = useState("")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError("")
+
         try {
-            // Simulate API call for registration
-            console.log({ storeName, category, nit, phone, address, email, password, logo })
-            // In a real app, you'd send this data to your backend
-            await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate network delay
-            router.push("/admin/dashboard")
+            // Register admin via backend
+            const registerData: RegisterAdminDto = {
+                fullName,
+                email,
+                password
+            }
+
+            const response = await adminService.register(registerData)
+            console.log('Admin registered:', response.admin)
+
+            // Show success message
+            alert('Registration successful! Please login.')
+
+            // Toggle to login form
+            onToggle()
+
         } catch (err: any) {
-            setError(err.message || "Registration failed")
+            console.error('Registration error:', err)
+
+            // Handle error messages
+            if (err.response?.data?.message) {
+                if (Array.isArray(err.response.data.message)) {
+                    setError(err.response.data.message.join(', '))
+                } else {
+                    setError(err.response.data.message)
+                }
+            } else {
+                setError('Registration failed. Please try again.')
+            }
         } finally {
             setLoading(false)
         }
@@ -41,10 +74,18 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithGoogle()
-            await authService.syncUser(token)
+            const idToken = await authService.loginWithGoogle()
+
+            // Get admin profile (backend will create if doesn't exist)
+            const admin = await adminService.getProfile(idToken)
+            console.log('Admin logged in with Google:', admin)
+
+            // Store admin data
+            localStorage.setItem('admin', JSON.stringify(admin))
+
             router.push("/admin/dashboard")
         } catch (err: any) {
+            console.error('Google login error:', err)
             setError(err.message || "Google login failed")
         } finally {
             setLoading(false)
@@ -55,32 +96,29 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithApple()
-            await authService.syncUser(token)
+            const idToken = await authService.loginWithApple()
+
+            // Get admin profile (backend will create if doesn't exist)
+            const admin = await adminService.getProfile(idToken)
+            console.log('Admin logged in with Apple:', admin)
+
+            // Store admin data
+            localStorage.setItem('admin', JSON.stringify(admin))
+
             router.push("/admin/dashboard")
         } catch (err: any) {
+            console.error('Apple login error:', err)
             setError(err.message || "Apple login failed")
         } finally {
             setLoading(false)
         }
     }
 
-    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0]
-            setLogo(file)
-            setLogoPreview(URL.createObjectURL(file))
-        } else {
-            setLogo(null)
-            setLogoPreview(null)
-        }
-    }
-
     return (
-        <div className="w-full max-w-sm space-y-6 overflow-y-auto max-h-[550px] pr-2 no-scrollbar">
+        <div className="w-full max-w-sm space-y-6">
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold text-foreground">{t("auth.createStore")}</h2>
+                    <h2 className="text-3xl font-bold text-foreground">Admin Registration</h2>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -101,70 +139,21 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
                         <ModeToggle />
                     </div>
                 </div>
-                <p className="text-muted-foreground">{t("auth.register.subtitle")} <button onClick={onToggle} className="text-primary hover:text-primary/80">{t("auth.login")}</button></p>
+                <p className="text-muted-foreground">
+                    Create your admin account. Already have one? <button onClick={onToggle} className="text-primary hover:text-primary/80">Login</button>
+                </p>
             </div>
+
             <form className="space-y-4" onSubmit={handleSubmit}>
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+                {error && <div className="text-red-500 text-sm bg-red-500/10 p-3 rounded-lg">{error}</div>}
+
                 <div className="space-y-2">
-                    <Label htmlFor="storeName">{t("auth.shop.storeName")}</Label>
+                    <Label htmlFor="fullName">Full Name</Label>
                     <Input
-                        id="storeName"
-                        placeholder={t("auth.shop.storeName")}
-                        value={storeName}
-                        onChange={(e) => setStoreName(e.target.value)}
-                        required
-                        className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="category">{t("auth.shop.category")}</Label>
-                    <Select value={category} onValueChange={setCategory} required>
-                        <SelectTrigger className="bg-muted border-none text-foreground h-12">
-                            <SelectValue placeholder={t("auth.shop.category")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="retail">{t("auth.category.retail")}</SelectItem>
-                            <SelectItem value="food">{t("auth.category.food")}</SelectItem>
-                            <SelectItem value="services">{t("auth.category.services")}</SelectItem>
-                            <SelectItem value="other">{t("auth.category.other")}</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="nit">{t("auth.shop.nit")}</Label>
-                        <Input
-                            id="nit"
-                            placeholder="123456789"
-                            value={nit}
-                            onChange={(e) => setNit(e.target.value)}
-                            required
-                            className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="phone">{t("auth.shop.phone")}</Label>
-                        <Input
-                            id="phone"
-                            placeholder="+1 234 567 890"
-                            type="tel"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            required
-                            className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="address">{t("auth.shop.address")}</Label>
-                    <Input
-                        id="address"
-                        placeholder={t("auth.shop.address")}
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
+                        id="fullName"
+                        placeholder="John Doe"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
                         required
                         className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
                     />
@@ -174,7 +163,7 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
                     <Label htmlFor="email">{t("auth.email")}</Label>
                     <Input
                         id="email"
-                        placeholder={t("auth.email")}
+                        placeholder="admin@example.com"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -184,33 +173,16 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="logo">{t("auth.shop.logo")}</Label>
-                    <div className="flex items-center gap-4">
-                        <Input
-                            id="logo"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoChange}
-                            className="bg-muted border-none text-foreground file:text-foreground file:bg-background file:border-none file:rounded-md h-12 pt-2"
-                        />
-                        {logoPreview && (
-                            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-border">
-                                <Image src={logoPreview} alt="Logo preview" fill className="object-cover" />
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="space-y-2">
                     <Label htmlFor="password">{t("auth.password")}</Label>
                     <div className="relative">
                         <Input
                             id="password"
-                            placeholder={t("auth.password")}
+                            placeholder="Minimum 6 characters"
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            minLength={6}
                             className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12 pr-10"
                         />
                         <button
@@ -221,6 +193,7 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                     </div>
+                    <small className="text-muted-foreground text-xs">Minimum 6 characters</small>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -232,8 +205,9 @@ export function ShopRegisterForm({ onToggle }: ShopRegisterFormProps) {
                         {t("auth.agree")} <a href="#" className="text-primary hover:text-primary/80">{t("auth.terms")}</a>
                     </label>
                 </div>
+
                 <Button disabled={loading} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-lg">
-                    {loading ? "Creating Store..." : t("auth.createAccount")}
+                    {loading ? "Creating Account..." : "Create Admin Account"}
                 </Button>
             </form>
 

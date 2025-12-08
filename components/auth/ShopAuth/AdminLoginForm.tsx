@@ -10,14 +10,16 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { useLanguage } from "@/contexts/language-context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
-
 import { authService } from "@/lib/services/auth.service"
+import { adminService } from "@/lib/services/admin.service"
+import { auth } from "@/lib/firebase"
+import { signInWithEmailAndPassword } from "firebase/auth"
 
-interface ShopLoginFormProps {
+interface AdminLoginFormProps {
     onToggle: () => void
 }
 
-export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
+export function AdminLoginForm({ onToggle }: AdminLoginFormProps) {
     const [showPassword, setShowPassword] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -30,12 +32,50 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
         e.preventDefault()
         setLoading(true)
         setError("")
+
         try {
-            const token = await authService.loginUser(email, password)
-            await authService.syncUser(token)
+            // 1. Login with Firebase
+            const userCredential = await signInWithEmailAndPassword(auth, email, password)
+            const user = userCredential.user
+            console.log('User authenticated:', user.uid)
+
+            // 2. Get ID token
+            const idToken = await user.getIdToken()
+
+            // 3. Fetch admin profile from backend
+            const admin = await adminService.getProfile(idToken)
+            console.log('Admin profile:', admin)
+
+            // 4. Store admin data
+            localStorage.setItem('admin', JSON.stringify(admin))
+
+            // 5. Redirect to admin dashboard
             router.push("/admin/dashboard")
+
         } catch (err: any) {
-            setError(err.message || "Login failed")
+            console.error('Login error:', err)
+
+            // Handle Firebase errors
+            if (err.code) {
+                switch (err.code) {
+                    case 'auth/user-not-found':
+                        setError('User not found')
+                        break
+                    case 'auth/wrong-password':
+                        setError('Incorrect password')
+                        break
+                    case 'auth/invalid-email':
+                        setError('Invalid email')
+                        break
+                    case 'auth/user-disabled':
+                        setError('User account disabled')
+                        break
+                    default:
+                        setError(err.message || 'Login failed')
+                }
+            } else {
+                setError(err.message || 'Login failed')
+            }
         } finally {
             setLoading(false)
         }
@@ -45,10 +85,18 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithGoogle()
-            await authService.syncUser(token)
+            const idToken = await authService.loginWithGoogle()
+
+            // Get admin profile (backend will create if doesn't exist for social login)
+            const admin = await adminService.getProfile(idToken)
+            console.log('Admin logged in with Google:', admin)
+
+            // Store admin data
+            localStorage.setItem('admin', JSON.stringify(admin))
+
             router.push("/admin/dashboard")
         } catch (err: any) {
+            console.error('Google login error:', err)
             setError(err.message || "Google login failed")
         } finally {
             setLoading(false)
@@ -59,10 +107,18 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithApple()
-            await authService.syncUser(token)
+            const idToken = await authService.loginWithApple()
+
+            // Get admin profile (backend will create if doesn't exist for social login)
+            const admin = await adminService.getProfile(idToken)
+            console.log('Admin logged in with Apple:', admin)
+
+            // Store admin data
+            localStorage.setItem('admin', JSON.stringify(admin))
+
             router.push("/admin/dashboard")
         } catch (err: any) {
+            console.error('Apple login error:', err)
             setError(err.message || "Apple login failed")
         } finally {
             setLoading(false)
@@ -73,7 +129,7 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
         <div className="w-full max-w-sm space-y-6">
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold text-foreground">{t("auth.shopLogin")}</h2>
+                    <h2 className="text-3xl font-bold text-foreground">Admin Login</h2>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -94,15 +150,17 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
                         <ModeToggle />
                     </div>
                 </div>
-                <p className="text-muted-foreground">{t("auth.shopLogin.subtitle")}</p>
+                <p className="text-muted-foreground">Sign in to your admin account</p>
             </div>
+
             <form className="space-y-4" onSubmit={handleSubmit}>
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+                {error && <div className="text-red-500 text-sm bg-red-500/10 p-3 rounded-lg">{error}</div>}
+
                 <div className="space-y-2">
                     <Label htmlFor="email">{t("auth.email")}</Label>
                     <Input
                         id="email"
-                        placeholder={t("auth.email")}
+                        placeholder="admin@example.com"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -110,6 +168,7 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
                         className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
                     />
                 </div>
+
                 <div className="space-y-2">
                     <Label htmlFor="password">{t("auth.password")}</Label>
                     <div className="relative">
@@ -131,6 +190,7 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
                         </button>
                     </div>
                 </div>
+
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                         <Checkbox id="remember" className="border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
@@ -143,8 +203,9 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
                     </div>
                     <a href="#" className="text-sm text-primary hover:text-primary/80">{t("auth.forgotPassword")}</a>
                 </div>
+
                 <Button disabled={loading} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-lg">
-                    {loading ? "Loading..." : t("auth.login")}
+                    {loading ? "Signing in..." : t("auth.login")}
                 </Button>
             </form>
 
@@ -173,7 +234,7 @@ export function ShopLoginForm({ onToggle }: ShopLoginFormProps) {
                             fill="#FBBC05"
                         />
                         <path
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.62l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                             fill="#EA4335"
                         />
                     </svg>
