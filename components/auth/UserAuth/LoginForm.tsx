@@ -10,18 +10,62 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 import { useRouter } from "next/navigation"
 
+import { authService } from "@/lib/services/auth.service"
+
 interface LoginFormProps {
     onToggle: () => void
 }
 
 export function LoginForm({ onToggle }: LoginFormProps) {
     const [showPassword, setShowPassword] = useState(false)
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
     const { t, language, setLanguage } = useLanguage()
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        router.push("/")
+        setLoading(true)
+        setError("")
+        try {
+            const token = await authService.loginUser(email, password)
+            await authService.syncUser(token)
+            router.push("/")
+        } catch (err: any) {
+            setError(err.message || "Login failed")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleGoogleLogin = async () => {
+        setLoading(true)
+        setError("")
+        try {
+            const token = await authService.loginWithGoogle()
+            await authService.syncUser(token)
+            router.push("/")
+        } catch (err: any) {
+            setError(err.message || "Google login failed")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleAppleLogin = async () => {
+        setLoading(true)
+        setError("")
+        try {
+            const token = await authService.loginWithApple()
+            await authService.syncUser(token)
+            router.push("/")
+        } catch (err: any) {
+            setError(err.message || "Apple login failed")
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -52,12 +96,16 @@ export function LoginForm({ onToggle }: LoginFormProps) {
                 <p className="text-muted-foreground">{t("auth.login.subtitle")}</p>
             </div>
             <form className="space-y-4" onSubmit={handleSubmit}>
+                {error && <div className="text-red-500 text-sm">{error}</div>}
                 <div className="space-y-2">
                     <Label htmlFor="email">{t("auth.email")}</Label>
                     <Input
                         id="email"
                         placeholder={t("auth.email")}
                         type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
                         className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12"
                     />
                 </div>
@@ -68,6 +116,9 @@ export function LoginForm({ onToggle }: LoginFormProps) {
                             id="password"
                             placeholder={t("auth.password")}
                             type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
                             className="bg-muted border-none text-foreground placeholder:text-muted-foreground h-12 pr-10"
                         />
                         <button
@@ -91,8 +142,8 @@ export function LoginForm({ onToggle }: LoginFormProps) {
                     </div>
                     <a href="#" className="text-sm text-primary hover:text-primary/80">{t("auth.forgotPassword")}</a>
                 </div>
-                <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-lg">
-                    {t("auth.login")}
+                <Button disabled={loading} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-lg">
+                    {loading ? "Loading..." : t("auth.login")}
                 </Button>
             </form>
 
@@ -106,7 +157,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="bg-transparent border-border text-foreground hover:bg-muted hover:text-foreground h-12">
+                <Button variant="outline" onClick={handleGoogleLogin} disabled={loading} className="bg-transparent border-border text-foreground hover:bg-muted hover:text-foreground h-12">
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                         <path
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -127,7 +178,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
                     </svg>
                     {t("auth.google")}
                 </Button>
-                <Button variant="outline" className="bg-transparent border-border text-foreground hover:bg-muted hover:text-foreground h-12">
+                <Button variant="outline" onClick={handleAppleLogin} disabled={loading} className="bg-transparent border-border text-foreground hover:bg-muted hover:text-foreground h-12">
                     <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.78 1.18-.19 2.31-.89 3.51-.84 1.54.06 2.74.56 3.69 1.62-3.3 1.97-2.71 5.73.26 6.98-.67 1.72-1.61 3.38-2.54 4.43zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                     </svg>

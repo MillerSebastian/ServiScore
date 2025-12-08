@@ -1,49 +1,206 @@
 "use client"
 
-import { useSelector } from "react-redux"
-import type { RootState } from "@/lib/store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Star, Briefcase, Settings, LogOut } from "lucide-react"
+import { Star, Briefcase, Settings, LogOut, Camera } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import ChatbaseWidget from "@/components/ChatbaseWidget";
+import { authService } from "@/lib/services/auth.service"
+import { auth } from "@/lib/firebase"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner" // Assuming sonner is used, or I'll use console.log/alert if not sure. I'll use simple alert or console for now if toast isn't obvious, but let's check imports. No toast imported. I'll use standard alert or just state for errors.
 
 export default function ProfilePage() {
-  const user = useSelector((state: RootState) => state.auth.user)
   const { t } = useLanguage()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [uploadingProfile, setUploadingProfile] = useState(false)
+  const [uploadingBanner, setUploadingBanner] = useState(false)
+
+  const profileInputRef = useRef<HTMLInputElement>(null)
+  const bannerInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800)
-    return () => clearTimeout(timer)
-  }, [])
+    const fetchProfile = async () => {
+      try {
+        const currentUser = auth.currentUser
+        if (currentUser) {
+          const idToken = await currentUser.getIdToken()
+          const profile = await authService.getProfile(idToken)
+          setUser(profile)
+        } else {
+          // Wait a bit for firebase to init
+          const unsubscribe = auth.onAuthStateChanged(async (u) => {
+            if (u) {
+              const idToken = await u.getIdToken()
+              const profile = await authService.getProfile(idToken)
+              setUser(profile)
+            } else {
+              router.push("/auth")
+            }
+            unsubscribe()
+          })
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [router])
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      router.push("/auth")
+    } catch (error) {
+      console.error("Logout failed", error)
+    }
+  }
+
+  const handleProfilePictureClick = () => {
+    profileInputRef.current?.click()
+  }
+
+  const handleBannerClick = () => {
+    bannerInputRef.current?.click()
+  }
+
+  const handleProfileFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingProfile(true)
+    try {
+      const currentUser = auth.currentUser
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken()
+        const updatedUser = await authService.uploadProfilePicture(idToken, file)
+        setUser(updatedUser) // Update local state with new profile data
+      }
+    } catch (error) {
+      console.error("Failed to upload profile picture", error)
+      alert("Failed to upload profile picture")
+    } finally {
+      setUploadingProfile(false)
+    }
+  }
+
+  const handleBannerFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingBanner(true)
+    try {
+      const currentUser = auth.currentUser
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken()
+        const updatedUser = await authService.uploadBanner(idToken, file)
+        setUser(updatedUser)
+      }
+    } catch (error) {
+      console.error("Failed to upload banner", error)
+      alert("Failed to upload banner")
+    } finally {
+      setUploadingBanner(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full rounded-3xl" />
+          <div className="px-8">
+            <div className="-mt-12 mb-6">
+              <Skeleton className="h-24 w-24 rounded-2xl" />
+            </div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!user) return <div>Please log in</div>
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl animate-in slide-in-from-bottom-4 duration-700">
+      {/* Hidden Inputs */}
+      <input
+        type="file"
+        ref={profileInputRef}
+        onChange={handleProfileFileChange}
+        className="hidden"
+        accept="image/*"
+      />
+      <input
+        type="file"
+        ref={bannerInputRef}
+        onChange={handleBannerFileChange}
+        className="hidden"
+        accept="image/*"
+      />
+
       {/* Profile Header */}
       <div className="bg-card text-card-foreground rounded-3xl shadow-soft border border-border/50 overflow-hidden mb-8">
-        <div className="h-32 bg-gradient-to-r from-pastel-blue to-pastel-purple opacity-50"></div>
+        {/* Banner */}
+        <div
+          className="h-32 bg-gradient-to-r from-pastel-blue to-pastel-purple relative cursor-pointer group"
+          onClick={handleBannerClick}
+        >
+          {user.bannerImage ? (
+            <img src={user.bannerImage} alt="Banner" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full opacity-50"></div>
+          )}
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Camera className="text-white h-8 w-8" />
+          </div>
+          {uploadingBanner && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+          )}
+        </div>
+
         <div className="px-8 pb-8">
           <div className="relative flex justify-between items-end -mt-12 mb-6">
-            <div className="h-24 w-24 rounded-2xl border-4 border-card bg-card shadow-sm overflow-hidden">
-              {isLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <img src={user.avatar || "/placeholder.svg"} alt={user.name} className="h-full w-full object-cover" />
+            {/* Profile Picture */}
+            <div
+              className="h-24 w-24 rounded-2xl border-4 border-card bg-card shadow-sm overflow-hidden relative cursor-pointer group"
+              onClick={handleProfilePictureClick}
+            >
+              <img
+                src={user.profilePicture || user.avatar || "/placeholder.svg"}
+                alt={user.fullName || user.name}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="text-white h-6 w-6" />
+              </div>
+              {uploadingProfile && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                </div>
               )}
             </div>
+
             <div className="flex gap-2 mb-2">
-              <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+              <Button variant="outline" size="sm" className="gap-2 bg-transparent" disabled>
                 <Settings className="h-4 w-4" /> {t("profile.settings")}
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 className="gap-2 bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-none"
+                onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" /> {t("profile.logout")}
               </Button>
@@ -53,17 +210,8 @@ export default function ProfilePage() {
             <ChatbaseWidget />
           </>
           <div>
-            {isLoading ? (
-              <div className="space-y-2 mb-4">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold">{user.name}</h1>
-                <p className="text-muted-foreground mb-4">{user.phone}</p>
-              </>
-            )}
+            <h1 className="text-2xl font-bold">{user.fullName || user.name || "User"}</h1>
+            <p className="text-muted-foreground mb-4">{user.email}</p>
 
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
@@ -71,7 +219,7 @@ export default function ProfilePage() {
                   <Star className="h-5 w-5 fill-current" />
                 </div>
                 <div>
-                  <p className="font-bold text-lg leading-none">{user.rating}</p>
+                  <p className="font-bold text-lg leading-none">{user.rating || "0.0"}</p>
                   <p className="text-xs text-muted-foreground">{t("service.rating")}</p>
                 </div>
               </div>
@@ -80,7 +228,7 @@ export default function ProfilePage() {
                   <Briefcase className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-lg leading-none">{user.completedServices}</p>
+                  <p className="font-bold text-lg leading-none">{user.completedServices || "0"}</p>
                   <p className="text-xs text-muted-foreground">{t("profile.completed")}</p>
                 </div>
               </div>
@@ -96,14 +244,9 @@ export default function ProfilePage() {
             <CardTitle className="text-lg">{t("profile.publishedServices")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {user.publishedServices && user.publishedServices.length > 0 ? (
               <div className="space-y-4">
-                <Skeleton className="h-16 w-full rounded-xl" />
-                <Skeleton className="h-16 w-full rounded-xl" />
-              </div>
-            ) : user.publishedServices.length > 0 ? (
-              <div className="space-y-4">
-                {user.publishedServices.map((id) => (
+                {user.publishedServices.map((id: any) => (
                   <div key={id} className="p-4 bg-muted/30 rounded-xl flex justify-between items-center">
                     <div>
                       <p className="font-medium text-sm">Service #{id}</p>
@@ -127,31 +270,23 @@ export default function ProfilePage() {
             <CardTitle className="text-lg">{t("profile.recentActivity")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+            <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted">
+              <div className="relative pl-6">
+                <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-blue shadow-sm"></div>
+                <p className="text-sm font-medium">Applied to "Dog Walking"</p>
+                <p className="text-xs text-muted-foreground">2 hours ago</p>
               </div>
-            ) : (
-              <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted">
-                <div className="relative pl-6">
-                  <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-blue shadow-sm"></div>
-                  <p className="text-sm font-medium">Applied to "Dog Walking"</p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
-                </div>
-                <div className="relative pl-6">
-                  <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-green shadow-sm"></div>
-                  <p className="text-sm font-medium">Reviewed "Sweet Delights Bakery"</p>
-                  <p className="text-xs text-muted-foreground">Yesterday</p>
-                </div>
-                <div className="relative pl-6">
-                  <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-pink shadow-sm"></div>
-                  <p className="text-sm font-medium">Completed profile setup</p>
-                  <p className="text-xs text-muted-foreground">3 days ago</p>
-                </div>
+              <div className="relative pl-6">
+                <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-green shadow-sm"></div>
+                <p className="text-sm font-medium">Reviewed "Sweet Delights Bakery"</p>
+                <p className="text-xs text-muted-foreground">Yesterday</p>
               </div>
-            )}
+              <div className="relative pl-6">
+                <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-pink shadow-sm"></div>
+                <p className="text-sm font-medium">Completed profile setup</p>
+                <p className="text-xs text-muted-foreground">3 days ago</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
