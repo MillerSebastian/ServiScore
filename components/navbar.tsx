@@ -68,10 +68,10 @@ export function Navbar() {
               ))}
               {isAdmin && (
                 <Link
-                  href="/admin/dashboard"
+                  href="/dashboard"
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-primary flex items-center gap-1",
-                    pathname?.startsWith("/admin/dashboard")
+                    pathname?.startsWith("/dashboard")
                       ? "text-primary font-bold"
                       : "text-muted-foreground"
                   )}
@@ -122,13 +122,13 @@ export function Navbar() {
           ))}
           {isAdmin && (
             <Link
-              href="/admin/dashboard"
+              href="/dashboard"
               className={cn(
                 "flex flex-col items-center justify-center w-full h-full gap-1",
-                pathname?.startsWith("/admin/dashboard") ? "text-primary" : "text-muted-foreground",
+                pathname?.startsWith("/dashboard") ? "text-primary" : "text-muted-foreground",
               )}
             >
-              <LayoutDashboard className={cn("h-5 w-5", pathname?.startsWith("/admin/dashboard") && "fill-current")} />
+              <LayoutDashboard className={cn("h-5 w-5", pathname?.startsWith("/dashboard") && "fill-current")} />
               <span className="text-[10px] font-medium">Dashboard</span>
             </Link>
           )}

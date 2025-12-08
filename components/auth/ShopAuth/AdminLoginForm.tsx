@@ -50,7 +50,7 @@ export function AdminLoginForm({ onToggle }: AdminLoginFormProps) {
             localStorage.setItem('admin', JSON.stringify(admin))
 
             // 5. Redirect to admin dashboard
-            router.push("/admin/dashboard")
+            router.push("/dashboard")
 
         } catch (err: any) {
             console.error('Login error:', err)
@@ -94,7 +94,7 @@ export function AdminLoginForm({ onToggle }: AdminLoginFormProps) {
             // Store admin data
             localStorage.setItem('admin', JSON.stringify(admin))
 
-            router.push("/admin/dashboard")
+            router.push("/dashboard")
         } catch (err: any) {
             console.error('Google login error:', err)
             setError(err.message || "Google login failed")
@@ -116,7 +116,7 @@ export function AdminLoginForm({ onToggle }: AdminLoginFormProps) {
             // Store admin data
             localStorage.setItem('admin', JSON.stringify(admin))
 
-            router.push("/admin/dashboard")
+            router.push("/dashboard")
         } catch (err: any) {
             console.error('Apple login error:', err)
             setError(err.message || "Apple login failed")
