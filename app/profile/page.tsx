@@ -82,6 +82,10 @@ export default function ProfilePage() {
         const idToken = await currentUser.getIdToken()
         const updatedUser = await authService.uploadProfilePicture(idToken, file)
         setUser(updatedUser) // Update local state with new profile data
+
+        // Re-fetch profile to ensure we have the latest data
+        const refreshedProfile = await authService.getProfile(idToken)
+        setUser(refreshedProfile)
       }
     } catch (error) {
       console.error("Failed to upload profile picture", error)
@@ -101,7 +105,13 @@ export default function ProfilePage() {
       if (currentUser) {
         const idToken = await currentUser.getIdToken()
         const updatedUser = await authService.uploadBanner(idToken, file)
+
+        // Update state with returned data
         setUser(updatedUser)
+
+        // Re-fetch profile to ensure we have the latest data
+        const refreshedProfile = await authService.getProfile(idToken)
+        setUser(refreshedProfile)
       }
     } catch (error) {
       console.error("Failed to upload banner", error)
@@ -155,11 +165,17 @@ export default function ProfilePage() {
           className="h-32 bg-gradient-to-r from-pastel-blue to-pastel-purple relative cursor-pointer group"
           onClick={handleBannerClick}
         >
-          {user.bannerImage ? (
-            <img src={user.bannerImage} alt="Banner" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full opacity-50"></div>
-          )}
+          {(() => {
+            const bannerUrl = user.banner
+              ? `${user.banner}${user.banner.includes('?') ? '&' : '?'}t=${Date.now()}`
+              : null
+            return bannerUrl ? (
+              <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full opacity-50"></div>
+            )
+          })()}
+
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <Camera className="text-white h-8 w-8" />
           </div>
