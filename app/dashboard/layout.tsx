@@ -19,20 +19,18 @@ export default async function DashboardLayout({
   const isScaled = activeThemeValue?.endsWith("-scaled")
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={cn("bg-background overscroll-none font-sans antialiased", activeThemeValue ? `theme-${activeThemeValue}` : "", isScaled ? "theme-scaled" : "")}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-            enableColorScheme
-          >
-          <ActiveThemeProvider initialTheme={activeThemeValue}>
+    <div className={cn("bg-background overscroll-none font-sans antialiased", activeThemeValue ? `theme-${activeThemeValue}` : "", isScaled ? "theme-scaled" : "")}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+        enableColorScheme
+      >
+        <ActiveThemeProvider initialTheme={activeThemeValue}>
           <main className="flex-1 pb-20 md:pb-0">{children}</main>
-          </ActiveThemeProvider>
-          </ThemeProvider>
-      </body>
-    </html>
+        </ActiveThemeProvider>
+      </ThemeProvider>
+    </div>
   )
 }
