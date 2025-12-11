@@ -1,9 +1,11 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { cookies } from "next/headers"
 import "./globals.css"
 import { Providers } from "./providers"
 import { Navbar } from "@/components/navbar"
+import { cn } from "@/lib/utils"
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -19,9 +21,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const activeThemeValue = cookieStore.get("active-theme")?.value
+  const isScaled = activeThemeValue?.endsWith("-scaled")
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className={cn("bg-background overscroll-none font-sans antialiased", activeThemeValue ? `theme-${activeThemeValue}` : "", isScaled ? "theme-scaled" : "")}>
         <Providers>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0">{children}</main>
