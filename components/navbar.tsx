@@ -22,7 +22,13 @@ export function Navbar() {
     { href: "/shopAuth", label: t("nav.shopLogin"), icon: User }
   ]
 
-  if (pathname === "/login" || pathname === "/shopAuth" || pathname?.startsWith("/landingPage")) return null
+  if (
+    pathname === "/login" ||
+    pathname === "/shopAuth" ||
+    pathname?.startsWith("/landingPage") ||
+    pathname?.startsWith("/dashboard")
+  )
+    return null
 
   return (
     <>
