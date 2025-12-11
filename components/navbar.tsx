@@ -38,7 +38,13 @@ export function Navbar() {
     { href: "/adminAuth", label: "Admin Login", icon: User }
   ]
 
-  if (pathname === "/login" || pathname === "/adminAuth" || pathname?.startsWith("/landingPage")) return null
+  if (
+    pathname === "/login" ||
+    pathname === "/shopAuth" ||
+    pathname?.startsWith("/landingPage") ||
+    pathname?.startsWith("/dashboard")
+  )
+    return null
 
   return (
     <>

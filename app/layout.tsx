@@ -1,9 +1,12 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { cookies } from "next/headers"
 import "./globals.css"
 import { Providers } from "./providers"
 import { Navbar } from "@/components/navbar"
+import { cn } from "@/lib/utils"
+
 
 
 import { AuthGuard } from "@/components/auth/AuthGuard"
@@ -16,14 +19,17 @@ export const metadata: Metadata = {
   generator: 'v0.app'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const activeThemeValue = cookieStore.get("active-theme")?.value
+  const isScaled = activeThemeValue?.endsWith("-scaled")
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-background text-foreground min-h-screen flex flex-col`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={cn("bg-background overscroll-none font-sans antialiased", activeThemeValue ? `theme-${activeThemeValue}` : "", isScaled ? "theme-scaled" : "")}>
         <Providers>
           <AuthGuard>
             <Navbar />
@@ -34,3 +40,4 @@ export default function RootLayout({
     </html>
   )
 }
+
