@@ -10,7 +10,6 @@ import {
 
 import data from "./data.json"
 import Clock from "./common/Clock"
-import { Navbar } from "@/components/navbar"
 
 export default function Page() {
   return (
