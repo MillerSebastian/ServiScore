@@ -34,7 +34,6 @@ export function Navbar() {
     { href: "/", label: t("nav.home"), icon: Home },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
-    { href: "/adminAuth", label: "Admin Login", icon: User }
   ]
 
   if (
