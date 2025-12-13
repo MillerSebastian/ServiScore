@@ -2,24 +2,21 @@
 
 import * as React from "react"
 import {
-  IconCamera,
   IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
   IconFileDescription,
-  IconFileWord,
   IconFolder,
   IconHelp,
+  IconHome,
   IconInnerShadowTop,
   IconListDetails,
-  IconReport,
   IconSearch,
   IconSettings,
+  IconUser,
   IconUsers,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/nav-documents"
+import { NavGroup } from "@/components/nav-group"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -39,77 +36,94 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  navMain: [
+  navGroups: [
     {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
+      title: "Platform",
+      items: [
+        {
+          title: "Home",
+          url: "/",
+          icon: IconHome,
+        },
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+          icon: IconDashboard,
+        },
+        {
+          title: "Profile",
+          url: "/profile",
+          icon: IconUser,
+        },
+      ],
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "Management",
+      items: [
+        {
+          title: "Manage Shops",
+          url: "/shops/manage",
+          icon: IconSettings,
+        },
+        {
+          title: "Manage Services",
+          url: "/services/manage",
+          icon: IconSettings,
+        },
+        {
+          title: "Team",
+          url: "#",
+          icon: IconUsers,
+        },
+      ],
     },
     {
       title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "Shop Analytics",
+          url: "/shop-analytics",
+          icon: IconChartBar,
         },
         {
-          title: "Archived",
-          url: "#",
+          title: "Shop Metrics",
+          url: "/shops/metrics",
+          icon: IconChartBar,
+        },
+        {
+          title: "Service Metrics",
+          url: "/services/metrics",
+          icon: IconChartBar,
+        },
+        {
+          title: "System Logs",
+          url: "/logs",
+          icon: IconFileDescription,
         },
       ],
     },
     {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
+      title: "Explore",
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "Browse Stores",
+          url: "/stores",
+          icon: IconFolder,
         },
         {
-          title: "Archived",
-          url: "#",
+          title: "Browse Services",
+          url: "/services",
+          icon: IconListDetails,
         },
       ],
     },
     {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
+      title: "Admin",
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
+          title: "Super Profile",
+          url: "/super-profile",
+          icon: IconInnerShadowTop,
         },
       ],
     },
@@ -131,23 +145,6 @@ const data = {
       icon: IconSearch,
     },
   ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -158,19 +155,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
+              size="lg"
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">ServiScore</span>
+              <a href="/">
+                <span className="text-xl font-bold tracking-tight">ServiScore</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavMain items={[]} />
+        {data.navGroups.map((group) => (
+          <NavGroup key={group.title} title={group.title} items={group.items} />
+        ))}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

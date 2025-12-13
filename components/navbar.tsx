@@ -42,7 +42,14 @@ export function Navbar() {
     pathname === "/login" ||
     pathname === "/shopAuth" ||
     pathname?.startsWith("/landingPage") ||
-    pathname?.startsWith("/dashboard")
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/shop-analytics") ||
+    pathname?.startsWith("/super-profile") ||
+    pathname?.startsWith("/logs") ||
+    pathname?.startsWith("/shops/manage") ||
+    pathname?.startsWith("/shops/metrics") ||
+    pathname?.startsWith("/services/manage") ||
+    pathname?.startsWith("/services/metrics")
   )
     return null
 
