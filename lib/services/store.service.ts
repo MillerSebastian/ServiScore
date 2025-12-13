@@ -1,17 +1,9 @@
-import { MOCK_STORES } from "../mock-data"
-import type { Store } from "../types/store.types"
-
-class StoreService {
-  private readonly basePath = "/stores"
-
-  async getMyStores(): Promise<Store[]> {
-    // Minimal implementation returning mock data for local dev
-    return Promise.resolve(MOCK_STORES)
-  }
-
-  async getPublicStores(): Promise<Store[]> {
-    return Promise.resolve(MOCK_STORES)
-  }
+// store.service.ts: stores feature removed — provide harmless stubs
+export const storeService = {
+  async getMyStores() {
+    return [] as any[]
+  },
+  async getPublicStores() {
+    return [] as any[]
+  },
 }
-
-export const storeService = new StoreService()

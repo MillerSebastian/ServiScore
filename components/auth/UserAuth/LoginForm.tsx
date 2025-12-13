@@ -32,7 +32,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         try {
             const token = await authService.loginUser(email, password)
             await authService.syncUser(token)
-            router.push("/")
+            router.push("/services")
         } catch (err: any) {
             setError(err.message || "Login failed")
         } finally {
@@ -46,7 +46,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         try {
             const token = await authService.loginWithGoogle()
             await authService.syncUser(token)
-            router.push("/")
+            router.push("/services")
         } catch (err: any) {
             setError(err.message || "Google login failed")
         } finally {
@@ -60,7 +60,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         try {
             const token = await authService.loginWithApple()
             await authService.syncUser(token)
-            router.push("/")
+            router.push("/services")
         } catch (err: any) {
             setError(err.message || "Apple login failed")
         } finally {

@@ -21,18 +21,6 @@ export interface Comment {
   replies?: Comment[]
 }
 
-export interface Store {
-  id: string
-  name: string
-  image: string
-  rating: number
-  reviewCount: number
-  description: string
-  category: string
-  photos: string[]
-  comments: Comment[]
-}
-
 export interface Service {
   id: string
   title: string
@@ -71,60 +59,7 @@ export const MOCK_USERS: User[] = [
   },
 ]
 
-export const MOCK_STORES: Store[] = [
-  {
-    id: "st1",
-    name: "Sweet Delights Bakery",
-    image: "/bustling-bakery.png",
-    rating: 4.7,
-    reviewCount: 128,
-    description: "Artisanal pastries and custom cakes for every occasion.",
-    category: "Food",
-    photos: ["/cake1.jpg", "/cake2.jpg"],
-    comments: [
-      {
-        id: "c1",
-        userId: "u2",
-        userName: "Sarah Smith",
-        userAvatar: "/diverse-group-avatars.png",
-        text: "The croissants are to die for! Highly recommend.",
-        date: "2023-10-15",
-        replies: [
-          {
-            id: "c1-r1",
-            userId: "u1",
-            userName: "Alex Johnson",
-            userAvatar: "/diverse-group-avatars.png",
-            text: "Totally agree, Sarah!",
-            date: "2023-10-16",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "st2",
-    name: "Green Thumb Nursery",
-    image: "/lush-secret-garden.png",
-    rating: 4.5,
-    reviewCount: 85,
-    description: "Your local source for indoor plants and gardening supplies.",
-    category: "Garden",
-    photos: ["/flower1.jpg"],
-    comments: [],
-  },
-  {
-    id: "st3",
-    name: "Morning Brew Cafe",
-    image: "/steaming-coffee-cup.png",
-    rating: 4.9,
-    reviewCount: 210,
-    description: "Best coffee in town with a cozy atmosphere.",
-    category: "Cafe",
-    photos: [],
-    comments: [],
-  },
-]
+// Stores removed — app focuses on services and users.
 
 export const MOCK_SERVICES: Service[] = [
   {

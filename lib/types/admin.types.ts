@@ -7,7 +7,6 @@ export interface Admin {
     banner?: string;               // URL de Cloudinary
     rating?: number;               // Rating promedio (calculado)
     role: 'admin';                 // Siempre será 'admin'
-    stores?: string[];             // IDs de tiendas del admin
     totalServices?: number;        // Total de servicios (opcional)
     completedServices?: number;    // Servicios completados (opcional)
     createdAt?: Date;              // Fecha de creación
