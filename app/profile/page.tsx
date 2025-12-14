@@ -12,6 +12,7 @@ import { authService } from "@/lib/services/auth.service"
 import { auth } from "@/lib/firebase"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner" // Assuming sonner is used, or I'll use console.log/alert if not sure. I'll use simple alert or console for now if toast isn't obvious, but let's check imports. No toast imported. I'll use standard alert or just state for errors.
+import SuperUserVerificationModal from "@/components/SuperUserVerificationModal"
 
 export default function ProfilePage() {
   const { t } = useLanguage()
@@ -20,6 +21,8 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [uploadingProfile, setUploadingProfile] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
+  const [superOpen, setSuperOpen] = useState(false)
+  const [isSuperVerified, setIsSuperVerified] = useState(false)
 
   const profileInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
@@ -143,6 +146,15 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl animate-in slide-in-from-bottom-4 duration-700">
+      <SuperUserVerificationModal
+        open={superOpen}
+        onOpenChange={setSuperOpen}
+        onFinished={() => {
+          setIsSuperVerified(true)
+          setSuperOpen(false)
+        }}
+        currentEmail={user?.email}
+      />
       {/* Hidden Inputs */}
       <input
         type="file"
@@ -214,6 +226,13 @@ export default function ProfilePage() {
                 <Settings className="h-4 w-4" /> {t("profile.settings")}
               </Button>
               <Button
+                size="sm"
+                className="gap-2 bg-pastel-blue text-blue-900 hover:bg-pastel-blue/80"
+                onClick={() => setSuperOpen(true)}
+              >
+                <BadgeCheck className="h-4 w-4 text-blue-700" /> Convertirme en Super Usuario
+              </Button>
+              <Button
                 variant="destructive"
                 size="sm"
                 className="gap-2 bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-none"
@@ -227,7 +246,14 @@ export default function ProfilePage() {
             <ChatbaseWidget />
           </>
           <div>
-            <h1 className="text-2xl font-bold">{user.fullName || user.name || "User"}</h1>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              {user.fullName || user.name || "User"}
+              {isSuperVerified && (
+                <span title="Super Usuario Verificado">
+                  <BadgeCheck className="h-5 w-5 text-blue-600" />
+                </span>
+              )}
+            </h1>
             <p className="text-muted-foreground mb-4">{user.email}</p>
 
             <div className="flex flex-wrap gap-4">
@@ -418,3 +444,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+

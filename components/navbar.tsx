@@ -32,15 +32,12 @@ export function Navbar() {
 
   const navItems = [
     { href: "/", label: t("nav.home"), icon: Home },
-    { href: "/stores", label: t("nav.stores"), icon: Star },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
-    { href: "/adminAuth", label: "Admin Login", icon: User }
   ]
 
   if (
     pathname === "/login" ||
-    pathname === "/shopAuth" ||
     pathname?.startsWith("/landingPage") ||
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/shop-analytics") ||

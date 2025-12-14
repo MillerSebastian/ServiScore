@@ -1,5 +1,6 @@
-import AdminAuthPage from "@/components/auth/ShopAuth/ShopAuthPage"
-
 export default function Page() {
-    return <AdminAuthPage />
+    if (typeof window !== "undefined") {
+        window.location.href = "/login"
+    }
+    return null
 }
