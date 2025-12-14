@@ -74,7 +74,7 @@ export default function HomePage() {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="pastel" className="text-primary-foreground bg-pastel-blue">
+                      <Badge variant="secondary" className="text-primary-foreground bg-pastel-blue">
                         ${service.price}
                       </Badge>
                     </div>
