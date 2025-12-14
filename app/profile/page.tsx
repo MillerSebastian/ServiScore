@@ -1,9 +1,8 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Star, Briefcase, Settings, LogOut, Camera, TrendingUp, Award, Clock, ShoppingBag, Heart, User } from "lucide-react"
+import { Star, Briefcase, Settings, LogOut, Camera, BadgeCheck } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -256,13 +255,13 @@ export default function ProfilePage() {
             </h1>
             <p className="text-muted-foreground mb-4">{user.email}</p>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex gap-6">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-600 dark:text-yellow-400">
                   <Star className="h-5 w-5 fill-current" />
                 </div>
                 <div>
-                  <p className="font-bold text-lg leading-none">{user.rating || "4.8"}</p>
+                  <p className="font-bold text-lg leading-none">{user.rating || "0.0"}</p>
                   <p className="text-xs text-muted-foreground">{t("service.rating")}</p>
                 </div>
               </div>
@@ -271,26 +270,8 @@ export default function ProfilePage() {
                   <Briefcase className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-lg leading-none">{user.completedServices || "24"}</p>
+                  <p className="font-bold text-lg leading-none">{user.completedServices || "0"}</p>
                   <p className="text-xs text-muted-foreground">{t("profile.completed")}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-green-500/10 rounded-lg text-green-600 dark:text-green-400">
-                  <Award className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-lg leading-none">{user.badges || "8"}</p>
-                  <p className="text-xs text-muted-foreground">Badges</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-purple-500/10 rounded-lg text-purple-600 dark:text-purple-400">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-lg leading-none">{user.responseTime || "2h"}</p>
-                  <p className="text-xs text-muted-foreground">Avg Response</p>
                 </div>
               </div>
             </div>
@@ -298,60 +279,20 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="border-none shadow-soft hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${user.totalEarnings || "12,450"}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-green-500">+18%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-soft hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{user.activeOrders || "5"}</div>
-            <p className="text-xs text-muted-foreground mt-1">In progress</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-soft hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Satisfaction Rate</CardTitle>
-            <Heart className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{user.satisfactionRate || "98"}%</div>
-            <p className="text-xs text-muted-foreground mt-1">From 124 reviews</p>
-          </CardContent>
-        </Card>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Published Services */}
         <Card className="border-none shadow-soft">
           <CardHeader>
             <CardTitle className="text-lg">{t("profile.publishedServices")}</CardTitle>
-            <CardDescription>Services you're offering to customers</CardDescription>
           </CardHeader>
           <CardContent>
             {user.publishedServices && user.publishedServices.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {user.publishedServices.map((id: any) => (
-                  <div key={id} className="p-4 bg-muted/30 rounded-xl flex justify-between items-center hover:bg-muted/50 transition-colors">
+                  <div key={id} className="p-4 bg-muted/30 rounded-xl flex justify-between items-center">
                     <div>
                       <p className="font-medium text-sm">Service #{id}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">{t("profile.active")}</Badge>
-                        <span className="text-xs text-muted-foreground">24 bookings</span>
-                      </div>
+                      <p className="text-xs text-muted-foreground">{t("profile.active")}</p>
                     </div>
                     <Button size="sm" variant="outline">
                       {t("profile.manage")}
@@ -360,11 +301,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Briefcase className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground text-sm">{t("profile.noServices")}</p>
-                <Button size="sm" className="mt-4">Create Service</Button>
-              </div>
+              <p className="text-muted-foreground text-sm">{t("profile.noServices")}</p>
             )}
           </CardContent>
         </Card>
@@ -373,7 +310,6 @@ export default function ProfilePage() {
         <Card className="border-none shadow-soft">
           <CardHeader>
             <CardTitle className="text-lg">{t("profile.recentActivity")}</CardTitle>
-            <CardDescription>Your latest actions and updates</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted">
@@ -392,55 +328,10 @@ export default function ProfilePage() {
                 <p className="text-sm font-medium">Completed profile setup</p>
                 <p className="text-xs text-muted-foreground">3 days ago</p>
               </div>
-              <div className="relative pl-6">
-                <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-white bg-pastel-purple shadow-sm"></div>
-                <p className="text-sm font-medium">Updated service pricing</p>
-                <p className="text-xs text-muted-foreground">5 days ago</p>
-              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Achievements Section */}
-      <Card className="border-none shadow-soft mt-8">
-        <CardHeader>
-          <CardTitle className="text-lg">Achievements & Badges</CardTitle>
-          <CardDescription>Your earned accomplishments and milestones</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center text-3xl mb-2">
-                🏆
-              </div>
-              <p className="text-sm font-medium text-center">Top Seller</p>
-              <p className="text-xs text-muted-foreground">Unlocked</p>
-            </div>
-            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 flex items-center justify-center text-3xl mb-2">
-                ⭐
-              </div>
-              <p className="text-sm font-medium text-center">5-Star Master</p>
-              <p className="text-xs text-muted-foreground">Unlocked</p>
-            </div>
-            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center text-3xl mb-2">
-                💎
-              </div>
-              <p className="text-sm font-medium text-center">Premium User</p>
-              <p className="text-xs text-muted-foreground">Unlocked</p>
-            </div>
-            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center text-3xl mb-2">
-                🚀
-              </div>
-              <p className="text-sm font-medium text-center">Fast Response</p>
-              <p className="text-xs text-muted-foreground">Unlocked</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
