@@ -2,6 +2,7 @@
 
 import { type Icon } from "@tabler/icons-react"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 import {
   SidebarGroup,
@@ -37,10 +38,10 @@ export function NavGroup({
                 asChild 
                 isActive={pathname === item.url}
               >
-                <a href={item.url}>
+                <Link href={item.url}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

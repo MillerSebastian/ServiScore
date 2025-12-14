@@ -29,6 +29,7 @@ import {
 
 import data from "./data.json"
 import Clock from "./common/Clock"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 export default function Page() {
   return (
@@ -64,6 +65,9 @@ export default function Page() {
               </div>
 
               <Clock />
+              <>
+                <ChatbaseWidget />
+              </>
               
               {/* Quick Stats */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

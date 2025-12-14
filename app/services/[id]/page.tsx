@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 export default function ServiceDetailPage() {
   const params = useParams()
@@ -58,6 +59,9 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl animate-in fade-in duration-500">
+      <>
+        <ChatbaseWidget />
+      </>
       <div className="mb-6">
         <Link
           href="/services"

@@ -15,6 +15,7 @@ import {
   IconUser,
   IconUsers,
 } from "@tabler/icons-react"
+import Link from "next/link"
 
 import { NavGroup } from "@/components/nav-group"
 import { NavMain } from "@/components/nav-main"
@@ -158,9 +159,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               size="lg"
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/">
+              <Link href="/">
                 <span className="text-xl font-bold tracking-tight">ServiScore</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
