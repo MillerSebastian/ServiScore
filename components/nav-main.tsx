@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -53,10 +54,10 @@ export function NavMain({
                 asChild 
                 isActive={pathname === item.url}
               >
-                <a href={item.url}>
+                <Link href={item.url}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

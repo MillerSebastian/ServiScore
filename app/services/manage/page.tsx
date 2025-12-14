@@ -62,6 +62,7 @@ import {
   BarChart3,
   Users,
 } from "lucide-react"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 // Mock data for services
 const mockServices = [
@@ -292,6 +293,9 @@ export default function ServiceManagementPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
+        <>
+          <ChatbaseWidget />
+        </>
         <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
