@@ -16,6 +16,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react"
 import Link from "next/link"
+import { useLanguage } from "@/contexts/language-context"
 
 import { NavGroup } from "@/components/nav-group"
 import { NavMain } from "@/components/nav-main"
@@ -31,124 +32,125 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navGroups: [
-    {
-      title: "Platform",
-      items: [
-        {
-          title: "Home",
-          url: "/",
-          icon: IconHome,
-        },
-        {
-          title: "Dashboard",
-          url: "/dashboard",
-          icon: IconDashboard,
-        },
-        {
-          title: "Profile",
-          url: "/profile",
-          icon: IconUser,
-        },
-      ],
-    },
-    {
-      title: "Management",
-      items: [
-        {
-          title: "Manage Shops",
-          url: "/shops/manage",
-          icon: IconSettings,
-        },
-        {
-          title: "Manage Services",
-          url: "/services/manage",
-          icon: IconSettings,
-        },
-        {
-          title: "Team",
-          url: "#",
-          icon: IconUsers,
-        },
-      ],
-    },
-    {
-      title: "Analytics",
-      items: [
-        {
-          title: "Shop Analytics",
-          url: "/shop-analytics",
-          icon: IconChartBar,
-        },
-        {
-          title: "Shop Metrics",
-          url: "/shops/metrics",
-          icon: IconChartBar,
-        },
-        {
-          title: "Service Metrics",
-          url: "/services/metrics",
-          icon: IconChartBar,
-        },
-        {
-          title: "System Logs",
-          url: "/logs",
-          icon: IconFileDescription,
-        },
-      ],
-    },
-    {
-      title: "Explore",
-      items: [
-        {
-          title: "Browse Stores",
-          url: "/stores",
-          icon: IconFolder,
-        },
-        {
-          title: "Browse Services",
-          url: "/services",
-          icon: IconListDetails,
-        },
-      ],
-    },
-    {
-      title: "Admin",
-      items: [
-        {
-          title: "Super Profile",
-          url: "/super-profile",
-          icon: IconInnerShadowTop,
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-}
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { t } = useLanguage()
+  
+  const data = {
+    user: {
+      name: "shadcn",
+      email: "m@example.com",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    navGroups: [
+      {
+        title: t("sidebar.platform"),
+        items: [
+          {
+            title: t("sidebar.home"),
+            url: "/",
+            icon: IconHome,
+          },
+          {
+            title: t("sidebar.dashboard"),
+            url: "/dashboard",
+            icon: IconDashboard,
+          },
+          {
+            title: t("sidebar.profile"),
+            url: "/profile",
+            icon: IconUser,
+          },
+        ],
+      },
+      {
+        title: t("sidebar.management"),
+        items: [
+          {
+            title: t("sidebar.manageShops"),
+            url: "/shops/manage",
+            icon: IconSettings,
+          },
+          {
+            title: t("sidebar.manageServices"),
+            url: "/services/manage",
+            icon: IconSettings,
+          },
+          {
+            title: t("sidebar.team"),
+            url: "#",
+            icon: IconUsers,
+          },
+        ],
+      },
+      {
+        title: t("sidebar.analytics"),
+        items: [
+          {
+            title: t("sidebar.shopAnalytics"),
+            url: "/shop-analytics",
+            icon: IconChartBar,
+          },
+          {
+            title: t("sidebar.shopMetrics"),
+            url: "/shops/metrics",
+            icon: IconChartBar,
+          },
+          {
+            title: t("sidebar.serviceMetrics"),
+            url: "/services/metrics",
+            icon: IconChartBar,
+          },
+          {
+            title: t("sidebar.systemLogs"),
+            url: "/logs",
+            icon: IconFileDescription,
+          },
+        ],
+      },
+      {
+        title: t("sidebar.explore"),
+        items: [
+          {
+            title: t("sidebar.browseStores"),
+            url: "/stores",
+            icon: IconFolder,
+          },
+          {
+            title: t("sidebar.browseServices"),
+            url: "/services",
+            icon: IconListDetails,
+          },
+        ],
+      },
+      {
+        title: t("sidebar.admin"),
+        items: [
+          {
+            title: t("sidebar.superProfile"),
+            url: "/super-profile",
+            icon: IconInnerShadowTop,
+          },
+        ],
+      },
+    ],
+    navSecondary: [
+      {
+        title: t("sidebar.settings"),
+        url: "#",
+        icon: IconSettings,
+      },
+      {
+        title: t("sidebar.getHelp"),
+        url: "#",
+        icon: IconHelp,
+      },
+      {
+        title: t("sidebar.search"),
+        url: "#",
+        icon: IconSearch,
+      },
+    ],
+  }
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

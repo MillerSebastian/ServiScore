@@ -3,41 +3,44 @@
 import { motion } from "framer-motion"
 import { BarChart3, Globe, Palette, ShieldCheck, Users, Zap } from "lucide-react"
 import Image from "next/image"
+import { useLanguage } from "@/contexts/language-context"
 
 const features = [
     {
         icon: Globe,
-        title: "Global Reach",
-        description: "Expand your business beyond borders with our integrated SEO and localization tools."
+        titleKey: "about.globalReach",
+        descKey: "about.globalReachDesc"
     },
     {
         icon: BarChart3,
-        title: "Advanced Analytics",
-        description: "Gain deep insights into your audience and performance with real-time data visualization."
+        titleKey: "about.advancedAnalytics",
+        descKey: "about.advancedAnalyticsDesc"
     },
     {
         icon: Palette,
-        title: "Design Intelligence",
-        description: "Create stunning, professional visuals effortlessly with our AI-powered design assistant."
+        titleKey: "about.designIntelligence",
+        descKey: "about.designIntelligenceDesc"
     },
     {
         icon: ShieldCheck,
-        title: "Secure & Reliable",
-        description: "Rest easy knowing your data and your customers' information are protected by enterprise-grade security."
+        titleKey: "about.secureReliable",
+        descKey: "about.secureReliableDesc"
     },
     {
         icon: Users,
-        title: "Community Driven",
-        description: "Connect with a vibrant network of professionals and customers in your local area."
+        titleKey: "about.communityDriven",
+        descKey: "about.communityDrivenDesc"
     },
     {
         icon: Zap,
-        title: "Lightning Fast",
-        description: "Experience optimized performance that keeps your customers engaged and converting."
+        titleKey: "about.lightningFast",
+        descKey: "about.lightningFastDesc"
     }
 ]
 
 export default function About() {
+    const { t } = useLanguage()
+    
     return (
         <section id="about" className="py-24 bg-[#0a0a0a] text-white overflow-hidden">
             <div className="container mx-auto px-6">
@@ -51,10 +54,10 @@ export default function About() {
                     className="text-center mb-20"
                 >
                     <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
-                        Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">Growth</span>
+                        {t("about.title")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">{t("about.titleHighlight")}</span>
                     </h2>
                     <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                        Everything you need to manage, scale, and succeed in one powerful platform.
+                        {t("about.subtitle")}
                     </p>
                 </motion.div>
 
@@ -73,8 +76,8 @@ export default function About() {
                                 className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
                             >
                                 <feature.icon className="w-10 h-10 text-purple-400 mb-4" />
-                                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                                <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                                <h3 className="text-xl font-semibold mb-2">{t(feature.titleKey)}</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">{t(feature.descKey)}</p>
                             </motion.div>
                         ))}
                     </div>

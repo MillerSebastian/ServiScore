@@ -6,18 +6,15 @@ import "./globals.css"
 import { Providers } from "./providers"
 import { Navbar } from "@/components/navbar"
 import { cn } from "@/lib/utils"
-
-
-
 import { AuthGuard } from "@/components/auth/AuthGuard"
+import { createMetadata } from "@/lib/seo"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "ServiScore",
-  description: "Community Marketplace & Store Ratings",
-  generator: 'v0.app'
-}
+export const metadata: Metadata = createMetadata({
+  title: "Home",
+  description: "Connect with local services and businesses. Find trusted service providers and rate your favorite stores in your community.",
+})
 
 export default async function RootLayout({
   children,

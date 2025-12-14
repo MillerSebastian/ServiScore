@@ -4,8 +4,11 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function Hero() {
+    const { t } = useLanguage()
+    
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0a] text-white">
             {/* Background Gradient/Image Overlay */}
@@ -41,17 +44,17 @@ export default function Hero() {
                     className="flex flex-col space-y-6"
                 >
                     <h2 className="text-xl md:text-2xl font-light tracking-wide text-gray-300">
-                        Welcome to the future of service
+                        {t("landing.hero.subtitle")}
                     </h2>
                     <p className="text-lg md:text-xl text-gray-400 max-w-lg leading-relaxed">
-                        Connect, collaborate, and grow with ServiScore. We provide the tools you need to elevate your business and reach your community effectively.
+                        {t("landing.hero.description")}
                     </p>
                     <div className="flex gap-4 pt-4">
                         <Button asChild size="lg" className="rounded-full text-lg px-8 bg-white text-black hover:bg-gray-200 transition-all">
-                            <Link href="/login">Get Started</Link>
+                            <Link href="/login">{t("landing.hero.getStarted")}</Link>
                         </Button>
                         <Button asChild variant="outline" size="lg" className="rounded-full text-lg px-8 border-white/20 text-white hover:bg-white/10 transition-all">
-                            <Link href="/about">Learn More</Link>
+                            <Link href="/about">{t("landing.hero.learnMore")}</Link>
                         </Button>
                     </div>
                 </motion.div>
