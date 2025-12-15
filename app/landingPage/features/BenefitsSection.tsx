@@ -1,55 +1,113 @@
 "use client"
 
-import { CheckCircle2 } from "lucide-react"
+import { motion } from "framer-motion"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle, Users, Briefcase } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 
 export default function BenefitsSection() {
     const { t } = useLanguage()
-    
-    const benefitKeys = [
-        "landing.benefits.satisfaction",
-        "landing.benefits.response",
-        "landing.benefits.bottlenecks",
-        "landing.benefits.empower",
-        "landing.benefits.integrate",
-        "landing.benefits.scale",
+
+    const customerBenefits = [
+        t("landing.benefits.save"),
+        t("landing.benefits.fast"),
+        t("landing.benefits.trust"),
+    ]
+
+    const providerBenefits = [
+        t("landing.benefits.earn"),
+        t("landing.benefits.grow"),
+        t("landing.benefits.tools"),
+    ]
+
+    const stats = [
+        { value: t("landing.benefits.stat1"), label: t("landing.benefits.stat1Label") },
+        { value: t("landing.benefits.stat2"), label: t("landing.benefits.stat2Label") },
+        { value: t("landing.benefits.stat3"), label: t("landing.benefits.stat3Label") },
     ]
     return (
-        <section id="benefits" className="py-20">
-            <div className="container mx-auto px-4 md:px-6">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-8">
-                        <div className="space-y-4">
-                            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                                {t("landing.benefits.title")}
-                            </h2>
-                            <p className="text-muted-foreground md:text-xl/relaxed">
-                                {t("landing.benefits.subtitle")}
-                            </p>
-                        </div>
-                        <div className="grid gap-4">
-                            {benefitKeys.map((key, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <CheckCircle2 className="w-5 h-5 text-pastel-green shrink-0" />
-                                    <span className="text-lg">{t(key)}</span>
+        <section id="benefits" className="container mx-auto px-6 py-20 bg-muted/30">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="text-center mb-16"
+            >
+                <h2 className="text-4xl md:text-5xl font-bold mb-4">{t("landing.benefits.title")}</h2>
+                <p className="text-xl text-muted-foreground max-w-3xl mx-auto">{t("landing.benefits.subtitle")}</p>
+            </motion.div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                {stats.map((stat, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="text-center"
+                    >
+                        <div className="text-5xl md:text-6xl font-bold text-primary mb-2">{stat.value}</div>
+                        <div className="text-muted-foreground">{stat.label}</div>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Benefits Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <Card className="h-full">
+                        <CardHeader>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2 rounded-lg bg-blue-500/10">
+                                    <Users className="h-6 w-6 text-blue-500" />
+                                </div>
+                                <CardTitle className="text-2xl">{t("landing.benefits.forCustomers")}</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {customerBenefits.map((benefit, index) => (
+                                <div key={index} className="flex items-start gap-3">
+                                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                    <p className="text-muted-foreground">{benefit}</p>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                    <div className="relative lg:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-pastel-blue/20 to-pastel-purple/20 p-8 flex items-center justify-center">
-                        {/* Abstract visual representation */}
-                        <div className="relative w-full max-w-sm aspect-square">
-                            <div className="absolute inset-0 bg-white/40 backdrop-blur-xl rounded-2xl shadow-2xl transform rotate-3 transition-transform hover:rotate-0 duration-500" />
-                            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl transform -rotate-3 transition-transform hover:rotate-0 duration-500 flex items-center justify-center p-8">
-                                <div className="text-center space-y-4">
-                                    <div className="text-6xl font-bold text-primary">98%</div>
-                                    <div className="text-xl font-medium text-muted-foreground">{t("landing.benefits.satisfactionRate")}</div>
-                                    <p className="text-sm text-muted-foreground">{t("landing.benefits.averageScore")}</p>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <Card className="h-full">
+                        <CardHeader>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2 rounded-lg bg-purple-500/10">
+                                    <Briefcase className="h-6 w-6 text-purple-500" />
                                 </div>
+                                <CardTitle className="text-2xl">{t("landing.benefits.forProviders")}</CardTitle>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {providerBenefits.map((benefit, index) => (
+                                <div key={index} className="flex items-start gap-3">
+                                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                    <p className="text-muted-foreground">{benefit}</p>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </div>
         </section>
     )

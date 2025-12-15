@@ -43,10 +43,10 @@ export default function SupportSection() {
         }
     ]
     return (
-        <section id="support" className="relative min-h-screen flex flex-col items-center justify-center py-20 overflow-hidden bg-[#0a0a0a] text-white">
+        <section id="support" className="relative min-h-screen flex flex-col items-center justify-center py-20 overflow-hidden bg-background">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-black/80 z-10" />
+                <div className="absolute inset-0 bg-background/80 z-10" />
                 <Image
                     src="/landindPictures/pexels-diimejii-2696299.jpg"
                     alt="Support Background"
@@ -69,11 +69,11 @@ export default function SupportSection() {
                     </h2>
 
                     <div className="relative">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input
                             type="text"
                             placeholder={t("support.searchPlaceholder")}
-                            className="w-full pl-12 py-6 rounded-full bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/20 transition-all text-lg"
+                            className="w-full pl-12 py-6 rounded-full bg-secondary/50 border-border placeholder:text-muted-foreground focus:bg-secondary transition-all text-lg"
                         />
                     </div>
                 </motion.div>
@@ -90,14 +90,14 @@ export default function SupportSection() {
                         {topics.map((topic, index) => (
                             <motion.div
                                 key={index}
-                                whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 255, 255, 0.1)" }}
-                                className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 flex flex-col items-center text-center border border-white/10 cursor-pointer transition-colors group"
+                                whileHover={{ scale: 1.02 }}
+                                className="bg-secondary/30 hover:bg-secondary/50 backdrop-blur-sm rounded-2xl p-8 flex flex-col items-center text-center border border-border cursor-pointer transition-colors group"
                             >
-                                <div className="bg-white/10 p-4 rounded-full mb-6 group-hover:bg-white/20 transition-colors">
-                                    <topic.icon className="h-6 w-6 text-white" />
+                                <div className="bg-primary/10 p-4 rounded-full mb-6 group-hover:bg-primary/20 transition-colors">
+                                    <topic.icon className="h-6 w-6 text-primary" />
                                 </div>
                                 <h4 className="text-lg font-semibold mb-3">{t(topic.titleKey)}</h4>
-                                <p className="text-sm text-gray-400 leading-relaxed">
+                                <p className="text-sm text-muted-foreground leading-relaxed">
                                     {t(topic.descKey)}
                                 </p>
                             </motion.div>
@@ -112,11 +112,11 @@ export default function SupportSection() {
                     transition={{ duration: 0.6, delay: 0.4 }}
                     className="mt-16 flex flex-col sm:flex-row items-center gap-4"
                 >
-                    <span className="text-lg text-gray-300">{t("support.stillNeedHelp")}</span>
+                    <span className="text-lg">{t("support.stillNeedHelp")}</span>
                     <Button
                         variant="outline"
                         size="lg"
-                        className="rounded-full px-8 border-white/20 text-white hover:bg-white hover:text-black transition-all"
+                        className="rounded-full px-8 transition-all"
                     >
                         {t("support.contactUs")}
                     </Button>

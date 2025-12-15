@@ -7,21 +7,21 @@ import { useLanguage } from "@/contexts/language-context"
 
 const testimonials = [
     {
-        name: "Sarah Johnson",
-        role: "Customer Success Manager",
-        content: "ServiScore has completely transformed how we track our team's performance. The insights are invaluable!",
+        name: "Maria García",
+        role: "Homeowner",
+        content: "landing.testimonials.quote1",
         avatar: "/avatars/01.png",
     },
     {
-        name: "Michael Chen",
-        role: "Operations Director",
-        content: "The automated feedback collection has saved us countless hours. Highly recommended!",
+        name: "John Smith",
+        role: "Freelance Designer",
+        content: "landing.testimonials.quote2",
         avatar: "/avatars/02.png",
     },
     {
-        name: "Emily Davis",
-        role: "Team Lead",
-        content: "My team loves the gamification aspects. It's made improving service quality fun and engaging.",
+        name: "Lisa Chen",
+        role: "Small Business Owner",
+        content: "landing.testimonials.quote3",
         avatar: "/avatars/03.png",
     },
     {
@@ -169,7 +169,7 @@ export default function TestimonialsSection() {
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">"{testimonial.content}"</p>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">"{t(testimonial.content)}"</p>
                                 </CardContent>
                             </Card>
                         ))}
@@ -197,7 +197,7 @@ export default function TestimonialsSection() {
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">"{testimonial.content}"</p>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">"{t(testimonial.content)}"</p>
                                 </CardContent>
                             </Card>
                         ))}

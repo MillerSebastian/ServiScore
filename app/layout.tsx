@@ -23,11 +23,11 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies()
   const activeThemeValue = cookieStore.get("active-theme")?.value
-  const isScaled = activeThemeValue?.endsWith("-scaled")
+  
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("bg-background overscroll-none font-sans antialiased", activeThemeValue ? `theme-${activeThemeValue}` : "", isScaled ? "theme-scaled" : "")}>
-        <Providers>
+      <body className={cn(inter.className, "bg-background overscroll-none overflow-x-hidden font-sans antialiased")}>
+        <Providers activeTheme={activeThemeValue}>
           <AuthGuard>
             <Navbar />
             <main className="flex-1 pb-20 md:pb-0">{children}</main>

@@ -62,7 +62,6 @@ import {
   PieChart,
   BarChart3,
 } from "lucide-react"
-import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 // Mock data for shops
 const mockShops = [
@@ -272,9 +271,6 @@ export default function ShopManagementPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <>
-          <ChatbaseWidget />
-        </>
         <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

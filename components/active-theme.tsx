@@ -5,6 +5,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
 } from "react"
 
@@ -28,16 +29,29 @@ export function ActiveThemeProvider({
     () => initialTheme || DEFAULT_THEME
   )
 
-  useEffect(() => {
+  // Use useLayoutEffect to apply theme before paint (prevents flash)
+  useLayoutEffect(() => {
+    // Remove all existing theme classes
     Array.from(document.body.classList)
       .filter((className) => className.startsWith("theme-"))
       .forEach((className) => {
         document.body.classList.remove(className)
       })
+    
+    // Add new theme class
     document.body.classList.add(`theme-${activeTheme}`)
+    
+    // Add scaled class if needed
     if (activeTheme.endsWith("-scaled")) {
       document.body.classList.add("theme-scaled")
+    } else {
+      document.body.classList.remove("theme-scaled")
     }
+  }, [activeTheme])
+
+  // Save to cookies separately
+  useEffect(() => {
+    document.cookie = `active-theme=${activeTheme}; path=/; max-age=31536000; SameSite=Lax`
   }, [activeTheme])
 
   return (

@@ -6,7 +6,6 @@ import { Star, Briefcase, Settings, LogOut, Camera, BadgeCheck } from "lucide-re
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import ChatbaseWidget from "@/components/ChatbaseWidget";
 import { authService } from "@/lib/services/auth.service"
 import { auth } from "@/lib/firebase"
 import { useRouter } from "next/navigation"
@@ -198,8 +197,8 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="px-8 pb-8">
-          <div className="relative flex justify-between items-end -mt-12 mb-6">
+        <div className="px-4 sm:px-8 pb-8">
+          <div className="relative flex flex-col sm:flex-row justify-between items-center sm:items-end -mt-12 mb-6 gap-4">
             {/* Profile Picture */}
             <div
               className="h-24 w-24 rounded-2xl border-4 border-card bg-card shadow-sm overflow-hidden relative cursor-pointer group"
@@ -220,30 +219,27 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="flex gap-2 mb-2">
-              <Button variant="outline" size="sm" className="gap-2 bg-transparent" disabled>
-                <Settings className="h-4 w-4" /> {t("profile.settings")}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mb-2">
+              <Button variant="outline" size="sm" className="gap-2 bg-transparent w-full sm:w-auto" disabled>
+                <Settings className="h-4 w-4" /> <span className="hidden sm:inline">{t("profile.settings")}</span><span className="sm:hidden">Ajustes</span>
               </Button>
               <Button
                 size="sm"
-                className="gap-2 bg-pastel-blue text-blue-900 hover:bg-pastel-blue/80"
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto text-xs sm:text-sm"
                 onClick={() => setSuperOpen(true)}
               >
-                <BadgeCheck className="h-4 w-4 text-blue-700" /> Convertirme en Super Usuario
+                <BadgeCheck className="h-4 w-4" /> <span className="hidden md:inline">Convertirme en Super Usuario</span><span className="md:hidden">Super Usuario</span>
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
-                className="gap-2 bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-none"
+                className="gap-2 bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-none w-full sm:w-auto"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" /> {t("profile.logout")}
               </Button>
             </div>
           </div>
-          <>
-            <ChatbaseWidget />
-          </>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               {user.fullName || user.name || "User"}
@@ -257,7 +253,7 @@ export default function ProfilePage() {
 
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-600 dark:text-yellow-400">
+                <div className="p-2 bg-pastel-yellow/30 rounded-lg text-yellow-600 dark:text-yellow-400">
                   <Star className="h-5 w-5 fill-current" />
                 </div>
                 <div>

@@ -111,22 +111,21 @@ export default function SuperProfilePage() {
         <div className="flex flex-1 flex-col p-4 md:p-8 space-y-8">
           
           {/* Super Profile Header */}
-          <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-slate-900 via-purple-900 to-slate-900 text-white shadow-2xl">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Crown className="w-64 h-64 rotate-12" />
+          <div className="relative overflow-hidden rounded-3xl bg-card border border-border text-card-foreground shadow-soft">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+                <Crown className="w-64 h-64 rotate-12 text-primary" />
             </div>
-            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
             
             <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8">
                 <div className="relative">
-                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)] overflow-hidden bg-slate-800">
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-primary shadow-lg overflow-hidden bg-muted">
                         <img 
                             src={user?.profilePicture || user?.avatar || "/placeholder.svg"} 
                             alt="Profile" 
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-slate-900 p-2 rounded-full border-4 border-slate-900">
+                    <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground p-2 rounded-full border-4 border-card">
                         <Crown className="w-6 h-6 fill-current" />
                     </div>
                 </div>
@@ -135,40 +134,40 @@ export default function SuperProfilePage() {
                     <div>
                         <div className="flex items-center justify-center md:justify-start gap-3">
                             <h1 className="text-3xl md:text-5xl font-bold">{user?.fullName || user?.name || "Super User"}</h1>
-                            <Badge className="bg-yellow-400 text-slate-900 hover:bg-yellow-300 border-none text-sm px-3 py-1">PRO</Badge>
+                            <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 border-none text-sm px-3 py-1">PRO</Badge>
                         </div>
-                        <p className="text-slate-300 mt-2 text-lg">Senior Administrator & Shop Manager</p>
+                        <p className="text-muted-foreground mt-2 text-lg">Senior Administrator & Shop Manager</p>
                     </div>
 
                     <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                        <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 backdrop-blur-sm">
-                            <ShieldCheck className="w-4 h-4 text-green-400" />
+                        <div className="flex items-center gap-2 bg-green-500/10 rounded-full px-4 py-2 border border-green-500/20">
+                            <ShieldCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
                             <span className="text-sm">Verified Admin</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 backdrop-blur-sm">
-                            <Star className="w-4 h-4 text-yellow-400" />
+                        <div className="flex items-center gap-2 bg-yellow-500/10 rounded-full px-4 py-2 border border-yellow-500/20">
+                            <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                             <span className="text-sm">4.9/5.0 Rating</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 backdrop-blur-sm">
-                            <Activity className="w-4 h-4 text-blue-400" />
+                        <div className="flex items-center gap-2 bg-blue-500/10 rounded-full px-4 py-2 border border-blue-500/20">
+                            <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             <span className="text-sm">Online Now</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <Button className="bg-white text-slate-900 hover:bg-slate-100 font-bold">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
                         <Settings className="w-4 h-4 mr-2" />
                         Edit Profile
                     </Button>
-                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                    <Button variant="outline" className="border-border hover:bg-accent">
                         <Bell className="w-4 h-4 mr-2" />
                         Notifications
                     </Button>
                     <Link href="/super-profile/logs">
                         <Button 
                             variant="outline" 
-                            className="border-white/20 text-white hover:bg-white/10"
+                            className="border-border hover:bg-accent"
                         >
                             <FileText className="w-4 h-4 mr-2" />
                             View Logs
@@ -180,10 +179,10 @@ export default function SuperProfilePage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <Card className="bg-linear-to-br from-blue-500/10 to-cyan-500/10 border-blue-200/20 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="bg-pastel-blue/30 border-border shadow-soft hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Number of Shops</CardTitle>
-                    <Store className="w-5 h-5 text-blue-500" />
+                    <Store className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold">12</div>
@@ -192,10 +191,10 @@ export default function SuperProfilePage() {
                     </p>
                 </CardContent>
             </Card>
-            <Card className="bg-linear-to-br from-purple-500/10 to-pink-500/10 border-purple-200/20 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="bg-pastel-purple/30 border-border shadow-soft hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Number of Services</CardTitle>
-                    <Briefcase className="w-5 h-5 text-purple-500" />
+                    <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold">38</div>
@@ -204,10 +203,10 @@ export default function SuperProfilePage() {
                     </p>
                 </CardContent>
             </Card>
-            <Card className="bg-linear-to-br from-yellow-500/10 to-orange-500/10 border-yellow-200/20 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="bg-pastel-yellow/30 border-border shadow-soft hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Overall Rating</CardTitle>
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400 fill-current" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold flex items-center gap-2">
@@ -218,27 +217,27 @@ export default function SuperProfilePage() {
                     </p>
                 </CardContent>
             </Card>
-            <Card className="bg-linear-to-br from-green-500/10 to-emerald-500/10 border-green-200/20 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="bg-pastel-green/30 border-border shadow-soft hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-                    <Trophy className="w-5 h-5 text-green-500" />
+                    <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold">$128K</div>
-                    <p className="text-xs text-green-500 flex items-center mt-1">
+                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center mt-1">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         +24.5% this month
                     </p>
                 </CardContent>
             </Card>
-            <Card className="bg-linear-to-br from-orange-500/10 to-red-500/10 border-orange-200/20 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="bg-pastel-pink/30 border-border shadow-soft hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Team Members</CardTitle>
-                    <Users className="w-5 h-5 text-orange-500" />
+                    <Users className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold">48</div>
-                    <p className="text-xs text-green-500 flex items-center mt-1">
+                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center mt-1">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         +3 new this week
                     </p>

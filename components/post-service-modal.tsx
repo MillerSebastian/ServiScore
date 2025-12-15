@@ -113,7 +113,7 @@ export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="bg-pastel-blue text-blue-900 hover:bg-pastel-blue/80">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Plus className="mr-2 h-4 w-4" /> {t("services.post.button")}
           </Button>
         )}
@@ -260,7 +260,7 @@ export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
           <Button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-pastel-blue text-blue-900 hover:bg-pastel-blue/80"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {loading ? (
               <>

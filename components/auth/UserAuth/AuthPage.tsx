@@ -6,6 +6,7 @@ import { LoginForm } from "./LoginForm"
 import { RegisterForm } from "./RegisterForm"
 import Image from "next/image"
 import { useLanguage } from "@/contexts/language-context"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true)
@@ -29,25 +30,27 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
-            <div className="relative w-full max-w-[1000px] h-[600px] bg-card rounded-3xl shadow-2xl overflow-hidden flex">
+        <>
+        <ChatbaseWidget />
+        <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 md:p-6 lg:p-8">
+            <div className="relative w-full max-w-[1400px] lg:h-[750px] bg-card rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
 
                 {/* Register Form (Left Side) */}
-                <div className="w-1/2 h-full flex items-center justify-center p-8">
+                <div className={`w-full lg:w-1/2 min-h-[700px] lg:h-full flex items-center justify-center p-6 sm:p-8 lg:p-12 ${isLogin ? 'hidden lg:flex' : 'flex'}`}>
                     <RegisterForm onToggle={toggleAuth} onSuccess={handleRegistrationSuccess} />
                 </div>
 
                 {/* Login Form (Right Side) */}
-                <div className="w-1/2 h-full flex items-center justify-center p-8">
+                <div className={`w-full lg:w-1/2 min-h-[700px] lg:h-full flex items-center justify-center p-6 sm:p-8 lg:p-12 ${isLogin ? 'flex' : 'hidden lg:flex'}`}>
                     <LoginForm onToggle={toggleAuth} />
                 </div>
 
-                {/* Sliding Overlay (Image) */}
+                {/* Sliding Overlay (Image) - Hidden on mobile */}
                 <motion.div
                     initial={false}
                     animate={{ x: isLogin ? "0%" : "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="absolute top-0 left-0 w-1/2 h-full z-10"
+                    className="hidden lg:block absolute top-0 left-0 w-1/2 h-full z-10"
                 >
                     <div className="relative w-full h-full rounded-3xl overflow-hidden bg-card">
                         <AnimatePresence>
@@ -69,11 +72,11 @@ export default function AuthPage() {
                             </motion.div>
                         </AnimatePresence>
 
-                        <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-8 text-white">
+                        <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-6 lg:p-8 text-white">
                             <div className="flex justify-between items-center">
-                                <span className="text-2xl font-bold">ServiScore</span>
+                                <span className="text-xl lg:text-2xl font-bold">ServiScore</span>
                                 {!showConfirmation && (
-                                    <button onClick={toggleAuth} className="text-sm bg-white/20 backdrop-blur-md px-4 py-2 rounded-full hover:bg-white/30 transition flex items-center gap-2">
+                                    <button onClick={toggleAuth} className="text-xs lg:text-sm bg-white/20 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full hover:bg-white/30 transition flex items-center gap-1 lg:gap-2">
                                         {isLogin ? t("auth.createAccount") : t("auth.login")} &rarr;
                                     </button>
                                 )}
@@ -81,13 +84,13 @@ export default function AuthPage() {
                             <div>
                                 {showConfirmation ? (
                                     <>
-                                        <h2 className="text-3xl font-bold mb-2">Check your email!</h2>
-                                        <p className="text-lg opacity-90">We've sent a confirmation link to your email address. Please verify your account to continue.</p>
+                                        <h2 className="text-2xl lg:text-3xl font-bold mb-2">Check your email!</h2>
+                                        <p className="text-base lg:text-lg opacity-90">We've sent a confirmation link to your email address. Please verify your account to continue.</p>
                                     </>
                                 ) : (
                                     <>
-                                        <h2 className="text-3xl font-bold mb-2">{t("auth.overlay.title")}</h2>
-                                        <p className="text-lg opacity-90">{t("auth.overlay.subtitle")}</p>
+                                        <h2 className="text-2xl lg:text-3xl font-bold mb-2">{t("auth.overlay.title")}</h2>
+                                        <p className="text-base lg:text-lg opacity-90">{t("auth.overlay.subtitle")}</p>
                                     </>
                                 )}
                             </div>
@@ -96,6 +99,7 @@ export default function AuthPage() {
                 </motion.div>
             </div>
         </div>
+        </>
     )
 }
 

@@ -22,6 +22,9 @@ import { NavGroup } from "@/components/nav-group"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { SearchCommand } from "@/components/search-command"
+import { SettingsSheet } from "@/components/settings-sheet"
+import { HelpDialog } from "@/components/help-dialog"
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +37,9 @@ import {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useLanguage()
+  const [searchOpen, setSearchOpen] = React.useState(false)
+  const [settingsOpen, setSettingsOpen] = React.useState(false)
+  const [helpOpen, setHelpOpen] = React.useState(false)
   
   const data = {
     user: {
@@ -77,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           },
           {
             title: t("sidebar.team"),
-            url: "#",
+            url: "/team",
             icon: IconUsers,
           },
         ],
@@ -136,48 +142,55 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navSecondary: [
       {
         title: t("sidebar.settings"),
-        url: "#",
         icon: IconSettings,
+        onClick: () => setSettingsOpen(true),
       },
       {
         title: t("sidebar.getHelp"),
-        url: "#",
         icon: IconHelp,
+        onClick: () => setHelpOpen(true),
       },
       {
         title: t("sidebar.search"),
-        url: "#",
         icon: IconSearch,
+        onClick: () => setSearchOpen(true),
       },
     ],
   }
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              size="lg"
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <Link href="/">
-                <span className="text-xl font-bold tracking-tight">ServiScore</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={[]} />
-        {data.navGroups.map((group) => (
-          <NavGroup key={group.title} title={group.title} items={group.items} />
-        ))}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-    </Sidebar>
+    <>
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                size="lg"
+                className="data-[slot=sidebar-menu-button]:!p-1.5"
+              >
+                <Link href="/">
+                  <span className="text-xl font-bold tracking-tight">ServiScore</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <NavMain items={[]} />
+          {data.navGroups.map((group) => (
+            <NavGroup key={group.title} title={group.title} items={group.items} />
+          ))}
+          <NavSecondary items={data.navSecondary} className="mt-auto" />
+        </SidebarContent>
+        <SidebarFooter>
+          <NavUser user={data.user} />
+        </SidebarFooter>
+      </Sidebar>
+      
+      {/* Dialogs and Sheets */}
+      <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
+      <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+    </>
   )
 }
