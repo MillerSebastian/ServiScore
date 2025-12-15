@@ -1,22 +1,32 @@
+"use client"
+
 import type React from "react"
-import { cookies } from "next/headers"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react"
 
 const META_THEME_COLORS = {
   light: "#ffffff",
   dark: "#000000",
 };
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookieStore = await cookies()
-  const activeThemeValue = cookieStore.get("active-theme")?.value
-  const isScaled = activeThemeValue?.endsWith("-scaled")
+  const [activeThemeValue, setActiveThemeValue] = useState<string | undefined>(undefined)
+  const [isScaled, setIsScaled] = useState(false)
+
+  useEffect(() => {
+    const theme = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("active-theme="))
+      ?.split("=")[1]
+    setActiveThemeValue(theme)
+    setIsScaled(theme?.endsWith("-scaled") || false)
+  }, [])
 
   return (
     <div className={cn("bg-background overscroll-none font-sans antialiased", activeThemeValue ? `theme-${activeThemeValue}` : "", isScaled ? "theme-scaled" : "")}>

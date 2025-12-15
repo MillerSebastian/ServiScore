@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Star } from "lucide-react"
+import { useLanguage } from "@/contexts/language-context"
 
 const testimonials = [
     {
@@ -135,12 +136,14 @@ const row1 = [...firstHalf, ...firstHalf]
 const row2 = [...secondHalf, ...secondHalf]
 
 export default function TestimonialsSection() {
+    const { t } = useLanguage()
+    
     return (
         <section id="testimonials" className="py-20 overflow-hidden bg-muted/30">
             <div className="container mx-auto px-4 md:px-6 mb-12 text-center">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl mb-4">Trusted by Industry Leaders</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl mb-4">{t("landing.testimonials.title")}</h2>
                 <p className="text-muted-foreground md:text-xl/relaxed max-w-[800px] mx-auto">
-                    See what our customers have to say about their experience with ServiScore.
+                    {t("landing.testimonials.subtitle")}
                 </p>
             </div>
 

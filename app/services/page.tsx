@@ -1,21 +1,32 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Calendar, Filter } from "lucide-react"
+import { MapPin, Calendar } from "lucide-react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { PostServiceModal } from "@/components/post-service-modal"
+import { ServicesFilter, type FilterState } from "@/components/services-filter"
+import { ServicesSearch } from "@/components/services-search"
 import { motion } from "framer-motion"
-import { Skeleton } from "@/components/ui/skeleton"
-import ChatbaseWidget from "@/components/ChatbaseWidget";
+import { ServiceCardSkeletonGrid } from "@/components/service-card-skeleton"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function ServicesPage() {
   const services = useSelector((state: RootState) => state.services.items)
   const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filters, setFilters] = useState<FilterState>({
+    category: "all",
+    minPrice: 0,
+    maxPrice: 500,
+    location: "all",
+    status: "all",
+  })
+  const { t } = useLanguage()
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,6 +34,35 @@ export default function ServicesPage() {
     }, 1500)
     return () => clearTimeout(timer)
   }, [])
+
+  const filteredServices = useMemo(() => {
+    return services.filter((service) => {
+      const matchesSearch =
+        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.creatorName.toLowerCase().includes(searchQuery.toLowerCase())
+
+      const matchesCategory = filters.category === "all" || service.category.toLowerCase() === filters.category.toLowerCase()
+
+      const matchesPrice = service.price >= filters.minPrice && service.price <= filters.maxPrice
+
+      const matchesLocation = filters.location === "all" || service.location === filters.location
+
+      const matchesStatus = filters.status === "all" || service.status === filters.status
+
+      return matchesSearch && matchesCategory && matchesPrice && matchesLocation && matchesStatus
+    })
+  }, [services, searchQuery, filters])
+
+  const handleResetFilters = () => {
+    setFilters({
+      category: "all",
+      minPrice: 0,
+      maxPrice: 500,
+      location: "all",
+      status: "all",
+    })
+  }
 
   const container = {
     hidden: { opacity: 0 },
@@ -43,53 +83,31 @@ export default function ServicesPage() {
 
     
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Community Services</h1>
-          <p className="text-muted-foreground">Find help or offer your skills to neighbors.</p>
+      <div className="flex flex-col gap-6 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{t("services.title")}</h1>
+            <p className="text-muted-foreground">{t("services.subtitle")}</p>
+          </div>
+          <div className="flex gap-2">
+            <ServicesFilter filters={filters} onFilterChange={setFilters} onReset={handleResetFilters} />
+            <PostServiceModal />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2 bg-transparent">
-            <Filter className="h-4 w-4" /> Filter
-          </Button>
-          <PostServiceModal />
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <ServicesSearch value={searchQuery} onChange={setSearchQuery} />
+          {filteredServices.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {filteredServices.length} {filteredServices.length === 1 ? "service" : "services"} found
+            </p>
+          )}
         </div>
       </div>
       <>
         <ChatbaseWidget />
       </>
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="h-full shadow-soft border border-transparent">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div>
-                      <Skeleton className="h-4 w-24 mb-2" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Skeleton className="h-6 w-16 mb-1" />
-                    <Skeleton className="h-3 w-12 ml-auto" />
-                  </div>
-                </div>
-                <Skeleton className="h-6 w-3/4 mb-3" />
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-2/3 mb-6" />
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                  <div className="flex gap-4">
-                    <Skeleton className="h-3 w-20" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <ServiceCardSkeletonGrid count={4} />
       ) : (
         <motion.div
           variants={container}
@@ -97,7 +115,13 @@ export default function ServicesPage() {
           animate="show"
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {services.map((service) => (
+          {filteredServices.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">No services found matching your criteria</p>
+              <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters or search terms</p>
+            </div>
+          ) : (
+            filteredServices.map((service) => (
             <motion.div key={service.id} variants={item}>
               <Link href={`/services/${service.id}`}>
                 <Card className="h-full hover:border-pastel-blue/50 transition-all duration-200 shadow-soft border border-transparent bg-card">
@@ -125,7 +149,7 @@ export default function ServicesPage() {
                         <span className="block text-2xl font-bold text-pastel-blue-dark text-blue-600 dark:text-blue-400">
                           ${service.price}
                         </span>
-                        <span className="text-xs text-muted-foreground">Fixed Price</span>
+                        <span className="text-xs text-muted-foreground">{t("services.fixedPrice")}</span>
                       </div>
                     </div>
 
@@ -149,14 +173,15 @@ export default function ServicesPage() {
                             : ""
                         }
                       >
-                        {service.status}
+                        {service.status === "Open" ? t("services.status.open") : service.status}
                       </Badge>
                     </div>
                   </CardContent>
                 </Card>
               </Link>
             </motion.div>
-          ))}
+          ))
+          )}
         </motion.div>
       )}
     </div>
