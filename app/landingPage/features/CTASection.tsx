@@ -17,7 +17,7 @@ export default function CTASection() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
-                className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background rounded-3xl p-12 md:p-16 text-center border-2 border-primary/20"
+                className="relative overflow-hidden bg-gradient-to-br from-pastel-blue/20 via-pastel-purple/10 to-background rounded-3xl p-12 md:p-16 text-center border border-border shadow-soft"
             >
                 <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_85%)]" />
                 <div className="relative z-10">

@@ -1,0 +1,32 @@
+/* Dashboard-specific scrollbar overrides to ensure theme changes work */
+
+/* Force scrollbar to respect dark mode in dashboard */
+.dark *::-webkit-scrollbar-track,
+html.dark *::-webkit-scrollbar-track {
+  background: oklch(0.17 0 0) !important;
+}
+
+.dark *::-webkit-scrollbar-thumb,
+html.dark *::-webkit-scrollbar-thumb {
+  background: oklch(0.35 0 0) !important;
+  border-color: oklch(0.17 0 0) !important;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover,
+html.dark *::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.45 0 0) !important;
+}
+
+/* Light mode (default) */
+*::-webkit-scrollbar-track {
+  background: oklch(0.96 0.01 240);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: oklch(0.70 0.02 260);
+  border-color: oklch(0.96 0.01 240);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.55 0.03 260);
+}

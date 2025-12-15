@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, ArrowRight, Plus } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect } from "react"
-import ChatbaseWidget from "@/components/ChatbaseWidget";
 import { Skeleton } from "@/components/ui/skeleton"
 
 
@@ -31,9 +30,6 @@ export default function HomePage() {
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">{t("home.hero.title")}</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("home.hero.subtitle")}</p>
       </section>
-      <>
-        <ChatbaseWidget />
-      </>
 
       {/* Recent Services */}
 

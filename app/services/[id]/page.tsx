@@ -11,7 +11,6 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 export default function ServiceDetailPage() {
   const params = useParams()
@@ -59,9 +58,6 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl animate-in fade-in duration-500">
-      <>
-        <ChatbaseWidget />
-      </>
       <div className="mb-6">
         <Link
           href="/services"
@@ -87,15 +83,15 @@ export default function ServiceDetailPage() {
             <h1 className="text-3xl font-bold mb-4">{service.title}</h1>
 
             <div className="flex flex-wrap gap-4 mb-8">
-              <div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-lg text-sm font-medium">
+              <div className="flex items-center gap-2 bg-pastel-green/20 px-3 py-2 rounded-lg text-sm font-medium">
                 <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />${service.price}
               </div>
-              <div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-lg text-sm font-medium">
+              <div className="flex items-center gap-2 bg-pastel-blue/20 px-3 py-2 rounded-lg text-sm font-medium">
                 <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 {service.location}
               </div>
-              <div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-lg text-sm font-medium">
-                <Calendar className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <div className="flex items-center gap-2 bg-pastel-yellow/20 px-3 py-2 rounded-lg text-sm font-medium">
+                <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                 {service.date}
               </div>
             </div>
@@ -185,11 +181,11 @@ export default function ServiceDetailPage() {
                   {t("service.applyHelp", { name: service.creatorName })}
                 </p>
                 {hasApplied ? (
-                  <Button className="w-full bg-green-500 hover:bg-green-600 text-white" disabled>
+                  <Button className="w-full bg-pastel-green text-green-900 dark:text-green-100 hover:bg-pastel-green/80" disabled>
                     <CheckCircle className="mr-2 h-4 w-4" /> {t("service.applied")}
                   </Button>
                 ) : (
-                  <Button className="w-full bg-pastel-blue text-blue-900 hover:bg-pastel-blue/80" onClick={handleApply}>
+                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleApply}>
                     {t("service.apply")}
                   </Button>
                 )}

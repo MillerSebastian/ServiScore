@@ -233,9 +233,9 @@ export default function ServiceMetricsPage() {
       }
     >
       <AppSidebar variant="inset" />
-      <SidebarInset>
+      <SidebarInset className="overflow-x-hidden">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden">
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
@@ -249,7 +249,7 @@ export default function ServiceMetricsPage() {
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Time Range" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent align="end" sideOffset={4}>
                   <SelectItem value="7">Last 7 days</SelectItem>
                   <SelectItem value="30">Last 30 days</SelectItem>
                   <SelectItem value="90">Last 90 days</SelectItem>

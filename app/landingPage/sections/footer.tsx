@@ -9,7 +9,7 @@ export default function Footer() {
     const { t } = useLanguage()
     
     return (
-        <footer className="bg-secondary py-12 border-t">
+        <footer className="bg-muted/30 py-12 border-t border-border">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                     {/* Brand */}

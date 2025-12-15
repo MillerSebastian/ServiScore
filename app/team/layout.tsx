@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ActiveThemeProvider } from "@/components/active-theme"
 
-export default async function ShopsLayout({
+export default async function TeamLayout({
   children,
 }: {
   children: React.ReactNode

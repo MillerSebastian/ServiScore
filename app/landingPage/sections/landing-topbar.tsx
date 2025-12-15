@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react"
+import { ThemeSelector } from "@/components/theme-selector"
 
 export default function LandingTopbar() {
     const { theme, setTheme } = useTheme()
@@ -62,16 +63,19 @@ export default function LandingTopbar() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setLanguage("en")}>
-                                <span className={language === "en" ? "font-bold" : ""}>English</span>
+                            <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}>
+                                English
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setLanguage("es")}>
-                                <span className={language === "es" ? "font-bold" : ""}>Español</span>
+                            <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}>
+                                Español
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Theme Toggle */}
+                    {/* Theme Selector */}
+                    {mounted && <ThemeSelector />}
+
+                    {/* Theme Toggle (Light/Dark) */}
                     {mounted && (
                         <Button
                             variant="ghost"

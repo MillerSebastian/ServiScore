@@ -12,7 +12,6 @@ import { ServicesFilter, type FilterState } from "@/components/services-filter"
 import { ServicesSearch } from "@/components/services-search"
 import { motion } from "framer-motion"
 import { ServiceCardSkeletonGrid } from "@/components/service-card-skeleton"
-import ChatbaseWidget from "@/components/ChatbaseWidget"
 import { useLanguage } from "@/contexts/language-context"
 
 export default function ServicesPage() {
@@ -103,9 +102,6 @@ export default function ServicesPage() {
           )}
         </div>
       </div>
-      <>
-        <ChatbaseWidget />
-      </>
       {isLoading ? (
         <ServiceCardSkeletonGrid count={4} />
       ) : (
@@ -139,14 +135,14 @@ export default function ServicesPage() {
                           <p className="font-bold text-foreground">{service.creatorName}</p>
                           <Badge
                             variant="secondary"
-                            className="text-[10px] mt-1 bg-muted text-muted-foreground hover:bg-muted"
+                            className="text-[10px] mt-1 bg-pastel-purple/20 text-purple-700 dark:text-purple-400 hover:bg-pastel-purple/30 border-purple-500/20"
                           >
                             {service.category}
                           </Badge>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="block text-2xl font-bold text-pastel-blue-dark text-blue-600 dark:text-blue-400">
+                        <span className="block text-2xl font-bold text-primary">
                           ${service.price}
                         </span>
                         <span className="text-xs text-muted-foreground">{t("services.fixedPrice")}</span>
@@ -169,8 +165,8 @@ export default function ServicesPage() {
                         variant={service.status === "Open" ? "default" : "secondary"}
                         className={
                           service.status === "Open"
-                            ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
-                            : ""
+                            ? "bg-pastel-green/30 text-green-700 hover:bg-pastel-green/40 dark:text-green-400 border-green-500/20"
+                            : "bg-muted/50 text-muted-foreground"
                         }
                       >
                         {service.status === "Open" ? t("services.status.open") : service.status}

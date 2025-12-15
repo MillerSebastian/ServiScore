@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { Home, ShoppingBag, User, Star, Languages, LayoutDashboard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
+import { ThemeSelector } from "@/components/theme-selector"
 import { useLanguage } from "@/contexts/language-context"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -100,14 +101,15 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : ""}>
+                  <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}>
                     English
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : ""}>
+                  <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}>
                     Español
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <ThemeSelector />
               <ModeToggle />
             </div>
           </div>

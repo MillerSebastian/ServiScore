@@ -140,6 +140,152 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Modern Scrollbar Styles - Light & Dark Theme Support */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: oklch(0.96 0.01 240);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.70 0.02 260);
+    border-radius: 10px;
+    border: 2px solid oklch(0.96 0.01 240);
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0.03 260);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: oklch(0.45 0.04 260);
+  }
+
+  /* Dark mode scrollbar - Multiple selectors for maximum compatibility */
+  .dark ::-webkit-scrollbar-track,
+  html.dark ::-webkit-scrollbar-track,
+  [class*="dark"] ::-webkit-scrollbar-track {
+    background: oklch(0.17 0 0) !important;
+  }
+
+  .dark ::-webkit-scrollbar-thumb,
+  html.dark ::-webkit-scrollbar-thumb,
+  [class*="dark"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0 0) !important;
+    border-color: oklch(0.17 0 0) !important;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover,
+  html.dark ::-webkit-scrollbar-thumb:hover,
+  [class*="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.45 0 0) !important;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:active,
+  html.dark ::-webkit-scrollbar-thumb:active,
+  [class*="dark"] ::-webkit-scrollbar-thumb:active {
+    background: oklch(0.55 0 0) !important;
+  }
+
+  /* Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.70 0.02 260) oklch(0.96 0.01 240);
+  }
+
+  .dark *,
+  html.dark *,
+  [class*="dark"] * {
+    scrollbar-color: oklch(0.35 0 0) oklch(0.17 0 0) !important;
+  }
+
+  /* Sidebar specific scrollbar for better visibility */
+  [data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background: oklch(0.65 0.02 260);
+  }
+
+  .dark [data-sidebar="content"]::-webkit-scrollbar-thumb,
+  html.dark [data-sidebar="content"]::-webkit-scrollbar-thumb,
+  [class*="dark"] [data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background: oklch(0.40 0 0) !important;
+  }
+
+  /* Scrollbar corner for better aesthetics */
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Theme-specific scrollbar colors */
+@layer base {
+  .theme-blue ::-webkit-scrollbar-thumb,
+  .theme-blue-scaled ::-webkit-scrollbar-thumb,
+  [class*="theme-blue"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.60 0.15 240) !important;
+    border-color: oklch(0.96 0.01 240) !important;
+  }
+
+  .theme-blue ::-webkit-scrollbar-thumb:hover,
+  .theme-blue-scaled ::-webkit-scrollbar-thumb:hover,
+  [class*="theme-blue"] ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.50 0.18 240) !important;
+  }
+
+  .dark.theme-blue ::-webkit-scrollbar-thumb,
+  .dark.theme-blue-scaled ::-webkit-scrollbar-thumb,
+  html.dark [class*="theme-blue"] ::-webkit-scrollbar-thumb,
+  [class*="dark"][class*="theme-blue"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.45 0.18 240) !important;
+    border-color: oklch(0.17 0 0) !important;
+  }
+
+  .theme-green ::-webkit-scrollbar-thumb,
+  .theme-green-scaled ::-webkit-scrollbar-thumb,
+  [class*="theme-green"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.60 0.15 145) !important;
+    border-color: oklch(0.96 0.01 240) !important;
+  }
+
+  .theme-green ::-webkit-scrollbar-thumb:hover,
+  .theme-green-scaled ::-webkit-scrollbar-thumb:hover,
+  [class*="theme-green"] ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.50 0.18 145) !important;
+  }
+
+  .dark.theme-green ::-webkit-scrollbar-thumb,
+  .dark.theme-green-scaled ::-webkit-scrollbar-thumb,
+  html.dark [class*="theme-green"] ::-webkit-scrollbar-thumb,
+  [class*="dark"][class*="theme-green"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.55 0.15 145) !important;
+    border-color: oklch(0.17 0 0) !important;
+  }
+
+  .theme-amber ::-webkit-scrollbar-thumb,
+  .theme-amber-scaled ::-webkit-scrollbar-thumb,
+  [class*="theme-amber"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.65 0.15 85) !important;
+    border-color: oklch(0.96 0.01 240) !important;
+  }
+
+  .theme-amber ::-webkit-scrollbar-thumb:hover,
+  .theme-amber-scaled ::-webkit-scrollbar-thumb:hover,
+  [class*="theme-amber"] ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0.18 85) !important;
+  }
+
+  .dark.theme-amber ::-webkit-scrollbar-thumb,
+  .dark.theme-amber-scaled ::-webkit-scrollbar-thumb,
+  html.dark [class*="theme-amber"] ::-webkit-scrollbar-thumb,
+  [class*="dark"][class*="theme-amber"] ::-webkit-scrollbar-thumb {
+    background: oklch(0.55 0.15 85) !important;
+    border-color: oklch(0.17 0 0) !important;
+  }
 }
 
 /* Custom Utilities for clean UI */
@@ -155,6 +301,42 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Thin scrollbar variant for compact areas */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: oklch(0.75 0.02 260);
+    border-radius: 8px;
+    border: 1px solid transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.60 0.03 260);
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb,
+  html.dark .scrollbar-thin::-webkit-scrollbar-thumb,
+  [class*="dark"] .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: oklch(0.30 0 0) !important;
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover,
+  html.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover,
+  [class*="dark"] .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.40 0 0) !important;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
 
   @keyframes infinite-scroll {

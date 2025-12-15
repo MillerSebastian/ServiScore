@@ -6,6 +6,7 @@ import { LoginForm } from "./LoginForm"
 import { RegisterForm } from "./RegisterForm"
 import Image from "next/image"
 import { useLanguage } from "@/contexts/language-context"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true)
@@ -29,16 +30,18 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
-            <div className="relative w-full max-w-[1000px] lg:h-[600px] bg-card rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+        <>
+        <ChatbaseWidget />
+        <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 md:p-6 lg:p-8">
+            <div className="relative w-full max-w-[1400px] lg:h-[750px] bg-card rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
 
                 {/* Register Form (Left Side) */}
-                <div className={`w-full lg:w-1/2 min-h-[600px] lg:h-full flex items-center justify-center p-4 sm:p-6 lg:p-8 ${isLogin ? 'hidden lg:flex' : 'flex'}`}>
+                <div className={`w-full lg:w-1/2 min-h-[700px] lg:h-full flex items-center justify-center p-6 sm:p-8 lg:p-12 ${isLogin ? 'hidden lg:flex' : 'flex'}`}>
                     <RegisterForm onToggle={toggleAuth} onSuccess={handleRegistrationSuccess} />
                 </div>
 
                 {/* Login Form (Right Side) */}
-                <div className={`w-full lg:w-1/2 min-h-[600px] lg:h-full flex items-center justify-center p-4 sm:p-6 lg:p-8 ${isLogin ? 'flex' : 'hidden lg:flex'}`}>
+                <div className={`w-full lg:w-1/2 min-h-[700px] lg:h-full flex items-center justify-center p-6 sm:p-8 lg:p-12 ${isLogin ? 'flex' : 'hidden lg:flex'}`}>
                     <LoginForm onToggle={toggleAuth} />
                 </div>
 
@@ -96,6 +99,7 @@ export default function AuthPage() {
                 </motion.div>
             </div>
         </div>
+        </>
     )
 }
 

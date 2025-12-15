@@ -26,13 +26,13 @@ export function LanguageToggle() {
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => setLanguage("en")}
-          className={language === "en" ? "bg-accent" : ""}
+          className={language === "en" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}
         >
           English
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setLanguage("es")}
-          className={language === "es" ? "bg-accent" : ""}
+          className={language === "es" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}
         >
           Español
         </DropdownMenuItem>

@@ -130,7 +130,7 @@ export function RegisterForm({ onToggle, onSuccess }: RegisterFormProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-sm space-y-4 sm:space-y-6"
+            className="w-full max-w-md space-y-4 sm:space-y-5"
         >
             <Link href="/landingPage" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
                 <ArrowLeft className="h-4 w-4 mr-1" />

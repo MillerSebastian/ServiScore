@@ -45,7 +45,7 @@ export default function SuperUserVerificationModal({ open, onOpenChange, onFinis
           <div className="border-b px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xl font-bold">
-                <BadgeCheck className="h-5 w-5 text-blue-600" />
+                <BadgeCheck className="h-5 w-5 text-primary" />
                 <span>Convertirme en Super Usuario</span>
               </div>
             </div>
@@ -60,16 +60,16 @@ export default function SuperUserVerificationModal({ open, onOpenChange, onFinis
                       className={
                         "flex items-center justify-center h-8 w-8 rounded-full border text-sm " +
                         (active
-                          ? "bg-blue-600 text-white border-blue-600"
+                          ? "bg-primary text-primary-foreground border-primary"
                           : completed
-                            ? "bg-blue-100 text-blue-700 border-blue-200"
+                            ? "bg-primary/20 text-primary border-primary/30"
                             : "bg-muted text-muted-foreground border-border")
                       }
                     >
                       {s.key}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Icon className={active || completed ? "h-4 w-4 text-blue-600" : "h-4 w-4 text-muted-foreground"} />
+                      <Icon className={active || completed ? "h-4 w-4 text-primary" : "h-4 w-4 text-muted-foreground"} />
                       <span className={active ? "text-sm font-semibold" : "text-sm text-muted-foreground"}>{s.title}</span>
                     </div>
                   </div>
@@ -305,7 +305,7 @@ export default function SuperUserVerificationModal({ open, onOpenChange, onFinis
                   Siguiente <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button className="bg-blue-600 text-white hover:bg-blue-600/90" onClick={finish}>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={finish}>
                   Enviar solicitud
                 </Button>
               )}

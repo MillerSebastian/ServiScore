@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -28,6 +30,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { AccountDialog } from "@/components/account-dialog"
+import { BillingDialog } from "@/components/billing-dialog"
+import { NotificationsDialog } from "@/components/notifications-dialog"
+import { auth } from "@/lib/firebase"
+import { signOut } from "firebase/auth"
+import { toast } from "sonner"
 
 export function NavUser({
   user,
@@ -39,6 +47,21 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const [accountOpen, setAccountOpen] = React.useState(false)
+  const [billingOpen, setBillingOpen] = React.useState(false)
+  const [notificationsOpen, setNotificationsOpen] = React.useState(false)
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      toast.success("Logged out successfully")
+      router.push("/")
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast.error("Failed to log out")
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -84,27 +107,42 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAccountOpen(true)}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setBillingOpen(true)}>
                 <IconCreditCard />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setNotificationsOpen(true)}>
                 <IconNotification />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+      {/* Dialogs */}
+      <AccountDialog 
+        open={accountOpen} 
+        onOpenChange={setAccountOpen}
+        user={user}
+      />
+      <BillingDialog 
+        open={billingOpen} 
+        onOpenChange={setBillingOpen}
+      />
+      <NotificationsDialog 
+        open={notificationsOpen} 
+        onOpenChange={setNotificationsOpen}
+      />
     </SidebarMenu>
   )
 }
