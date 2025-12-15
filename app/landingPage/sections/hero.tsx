@@ -10,10 +10,10 @@ export default function Hero() {
     const { t } = useLanguage()
     
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0a] text-white">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
             {/* Background Gradient/Image Overlay */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-black z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-background to-background z-10" />
                 <Image
                     src="/landindPictures/pexels-bohlemedia-1884581.jpg"
                     alt="Hero Background"
@@ -43,18 +43,35 @@ export default function Hero() {
                     transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                     className="flex flex-col space-y-6"
                 >
-                    <h2 className="text-xl md:text-2xl font-light tracking-wide text-gray-300">
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
                         {t("landing.hero.subtitle")}
                     </h2>
-                    <p className="text-lg md:text-xl text-gray-400 max-w-lg leading-relaxed">
+                    <p className="text-lg md:text-xl text-muted-foreground max-w-lg leading-relaxed">
                         {t("landing.hero.description")}
                     </p>
-                    <div className="flex gap-4 pt-4">
-                        <Button asChild size="lg" className="rounded-full text-lg px-8 bg-white text-black hover:bg-gray-200 transition-all">
+                    
+                    {/* Social Proof Stats */}
+                    <div className="grid grid-cols-3 gap-4 py-4">
+                        <div>
+                            <div className="text-3xl font-bold">5K+</div>
+                            <div className="text-sm text-muted-foreground">{t("landing.hero.stats.users")}</div>
+                        </div>
+                        <div>
+                            <div className="text-3xl font-bold">10K+</div>
+                            <div className="text-sm text-muted-foreground">{t("landing.hero.stats.services")}</div>
+                        </div>
+                        <div>
+                            <div className="text-3xl font-bold">4.8★</div>
+                            <div className="text-sm text-muted-foreground">{t("landing.hero.stats.rating")}</div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                        <Button asChild size="lg" className="rounded-full text-lg px-8 transition-all shadow-lg hover:shadow-xl">
                             <Link href="/login">{t("landing.hero.getStarted")}</Link>
                         </Button>
-                        <Button asChild variant="outline" size="lg" className="rounded-full text-lg px-8 border-white/20 text-white hover:bg-white/10 transition-all">
-                            <Link href="/about">{t("landing.hero.learnMore")}</Link>
+                        <Button asChild variant="outline" size="lg" className="rounded-full text-lg px-8 transition-all">
+                            <Link href="#features">{t("landing.hero.learnMore")}</Link>
                         </Button>
                     </div>
                 </motion.div>

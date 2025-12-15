@@ -434,13 +434,13 @@ const GlobalReach = () => {
                     {/* Left Content */}
                     <div className="space-y-8">
                         <div>
-                            <p className="text-white font-semibold text-lg mb-4">Alcance Global</p>
-                            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                            <p className="font-semibold text-lg mb-4">Alcance Global</p>
+                            <h2 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
                                 Conectando Servicios
                                 <br />
-                                <span className="text-gray-400">En Todo el Mundo</span>
+                                <span className="text-muted-foreground">En Todo el Mundo</span>
                             </h2>
-                            <p className="text-gray-300 text-lg leading-relaxed">
+                            <p className="text-muted-foreground text-lg leading-relaxed">
                                 Nuestra plataforma rompe fronteras, conectando a proveedores de servicios con clientes en múltiples países. Únete a nuestra red global en expansión.
                             </p>
                         </div>
@@ -449,14 +449,14 @@ const GlobalReach = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             {stats.map((stat, index) => (
                                 <div key={index} className="space-y-2">
-                                    <div className="text-2xl lg:text-3xl font-bold text-white">
+                                    <div className="text-2xl lg:text-3xl font-bold">
                                         {stat.number}
                                     </div>
-                                    <div className="text-gray-300 font-medium">
+                                    <div className="text-muted-foreground font-medium">
                                         {stat.label}
                                     </div>
                                     {stat.sublabel && (
-                                        <div className="text-gray-400 text-sm">
+                                        <div className="text-muted-foreground/70 text-sm">
                                             {stat.sublabel}
                                         </div>
                                     )}
@@ -478,7 +478,7 @@ const GlobalReach = () => {
                             {[...Array(20)].map((_, i) => (
                                 <div
                                     key={i}
-                                    className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
+                                    className="absolute w-1 h-1 bg-primary rounded-full animate-pulse"
                                     style={{
                                         left: `${Math.random() * 100}%`,
                                         top: `${Math.random() * 100}%`,

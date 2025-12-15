@@ -14,7 +14,7 @@ import CTASection from "./features/CTASection"
 
 export default function LandingPage() {
     return (
-        <main className="min-h-screen bg-black relative">
+        <main className="min-h-screen bg-background relative">
             <LandingTopbar />
             <Hero />
 
