@@ -6,7 +6,8 @@
 node_modules/
 
 # Ignorar archivos de variables de entorno
-
+.env
+.env.*
 
 # Ignorar archivos de lock o directorios temporales comunes (opcional)
 .DS_Store
