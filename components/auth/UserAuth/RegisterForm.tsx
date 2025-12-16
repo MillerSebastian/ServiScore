@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { authService } from "@/lib/services/auth.service"
+import { authService } from "@/lib/services/auth.stub"
 
 interface RegisterFormProps {
     onToggle: () => void

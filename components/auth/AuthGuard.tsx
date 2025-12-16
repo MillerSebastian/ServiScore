@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { auth } from "@/lib/firebase"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const PUBLIC_ROUTES = [
@@ -20,28 +19,27 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [authenticated, setAuthenticated] = useState(false)
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setAuthenticated(true)
-                setLoading(false)
-            } else {
-                setAuthenticated(false)
-                setLoading(false)
+        // Check for backend token in localStorage
+        const backendToken = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+        const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null
+        
+        console.log('[AuthGuard] Backend token:', backendToken ? 'exists' : 'null', '| User ID:', userId)
+        
+        // User is authenticated if backend token exists
+        if (backendToken && userId) {
+            setAuthenticated(true)
+            setLoading(false)
+        } else {
+            setAuthenticated(false)
+            setLoading(false)
 
-                // Check if current route is public
-                const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
+            // Check if current route is public
+            const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
 
-                if (!isPublicRoute && pathname !== "/") {
-                    // Allow home page for now? The requirement says "if they try to access home or any other route without being logged in, redirect to login".
-                    // So home page "/" is ALSO protected.
-                    router.push("/login")
-                } else if (!isPublicRoute && pathname === "/") {
-                    router.push("/login")
-                }
+            if (!isPublicRoute) {
+                router.push("/login")
             }
-        })
-
-        return () => unsubscribe()
+        }
     }, [pathname, router])
 
     if (loading) {

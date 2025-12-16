@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { authService } from "@/lib/services/auth.service"
+import { authService } from "@/lib/services/auth.stub"
 
 interface LoginFormProps {
     onToggle: () => void
@@ -36,11 +36,15 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         e.preventDefault()
         setLoading(true)
         setError("")
+        console.log('[Login] Starting login with email:', email)
         try {
             const token = await authService.loginUser(email, password)
+            console.log('[Login] Token received:', token ? 'Yes' : 'No', token)
             await authService.syncUser(token)
-            router.push("/services")
+            console.log('[Login] Sync complete, redirecting to /')
+            router.push("/")
         } catch (err: any) {
+            console.error('[Login] Error:', err)
             setError(err.message || "Login failed")
         } finally {
             setLoading(false)

@@ -30,7 +30,7 @@ import {
   Briefcase
 } from "lucide-react"
 import { auth } from "@/lib/firebase"
-import { authService } from "@/lib/services/auth.service"
+import { authService } from "@/lib/services/auth.stub"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function SuperProfilePage() {

@@ -6,8 +6,7 @@ import { Star, Briefcase, Settings, LogOut, Camera, BadgeCheck } from "lucide-re
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { authService } from "@/lib/services/auth.service"
-import { auth } from "@/lib/firebase"
+import { authService } from "@/lib/services/auth.stub"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner" // Assuming sonner is used, or I'll use console.log/alert if not sure. I'll use simple alert or console for now if toast isn't obvious, but let's check imports. No toast imported. I'll use standard alert or just state for errors.
 import SuperUserVerificationModal from "@/components/SuperUserVerificationModal"
@@ -28,23 +27,18 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const currentUser = auth.currentUser
-        if (currentUser) {
-          const idToken = await currentUser.getIdToken()
-          const profile = await authService.getProfile(idToken)
+        const backendToken = localStorage.getItem('access_token')
+        const userId = localStorage.getItem('user_id')
+        console.log('[ProfilePage] backendToken:', backendToken ? 'exists' : 'null')
+        console.log('[ProfilePage] userId:', userId)
+        
+        if (backendToken && userId) {
+          console.log('[ProfilePage] Fetching profile...')
+          const profile = await authService.getProfile(backendToken)
+          console.log('[ProfilePage] Profile received:', profile)
           setUser(profile)
         } else {
-          // Wait a bit for firebase to init
-          const unsubscribe = auth.onAuthStateChanged(async (u) => {
-            if (u) {
-              const idToken = await u.getIdToken()
-              const profile = await authService.getProfile(idToken)
-              setUser(profile)
-            } else {
-              router.push("/login")
-            }
-            unsubscribe()
-          })
+          router.push("/login")
         }
       } catch (error) {
         console.error("Failed to fetch profile", error)
@@ -79,14 +73,13 @@ export default function ProfilePage() {
 
     setUploadingProfile(true)
     try {
-      const currentUser = auth.currentUser
-      if (currentUser) {
-        const idToken = await currentUser.getIdToken()
-        const updatedUser = await authService.uploadProfilePicture(idToken, file)
-        setUser(updatedUser) // Update local state with new profile data
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        const updatedUser = await authService.uploadProfilePicture(token, file)
+        setUser(updatedUser)
 
         // Re-fetch profile to ensure we have the latest data
-        const refreshedProfile = await authService.getProfile(idToken)
+        const refreshedProfile = await authService.getProfile(token)
         setUser(refreshedProfile)
       }
     } catch (error) {
@@ -103,16 +96,13 @@ export default function ProfilePage() {
 
     setUploadingBanner(true)
     try {
-      const currentUser = auth.currentUser
-      if (currentUser) {
-        const idToken = await currentUser.getIdToken()
-        const updatedUser = await authService.uploadBanner(idToken, file)
-
-        // Update state with returned data
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        const updatedUser = await authService.uploadBanner(token, file)
         setUser(updatedUser)
 
         // Re-fetch profile to ensure we have the latest data
-        const refreshedProfile = await authService.getProfile(idToken)
+        const refreshedProfile = await authService.getProfile(token)
         setUser(refreshedProfile)
       }
     } catch (error) {
