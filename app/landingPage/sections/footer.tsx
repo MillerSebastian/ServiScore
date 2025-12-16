@@ -48,10 +48,10 @@ export default function Footer() {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">{t("footer.platform")}</h3>
                         <ul className="space-y-2 text-muted-foreground">
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.features")}</Link></li>
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.pricing")}</Link></li>
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.aboutUs")}</Link></li>
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.contact")}</Link></li>
+                            <li><Link href="#features" className="hover:text-foreground transition-colors">{t("footer.features")}</Link></li>
+                            <li><Link href="#benefits" className="hover:text-foreground transition-colors">{t("footer.pricing")}</Link></li>
+                            <li><Link href="#about" className="hover:text-foreground transition-colors">{t("footer.aboutUs")}</Link></li>
+                            <li><Link href="#support" className="hover:text-foreground transition-colors">{t("footer.contact")}</Link></li>
                         </ul>
                     </div>
 
@@ -59,9 +59,9 @@ export default function Footer() {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">{t("footer.legal")}</h3>
                         <ul className="space-y-2 text-muted-foreground">
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.privacyPolicy")}</Link></li>
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.termsOfService")}</Link></li>
-                            <li><Link href="#" className="hover:text-foreground transition-colors">{t("footer.cookiePolicy")}</Link></li>
+                            <li><Link href="/privacy" className="hover:text-foreground transition-colors">{t("footer.privacyPolicy")}</Link></li>
+                            <li><Link href="/terms" className="hover:text-foreground transition-colors">{t("footer.termsOfService")}</Link></li>
+                            <li><Link href="/cookies" className="hover:text-foreground transition-colors">{t("footer.cookiePolicy")}</Link></li>
                         </ul>
                     </div>
                 </div>

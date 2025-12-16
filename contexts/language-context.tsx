@@ -269,6 +269,7 @@ const translations: Record<Language, Record<string, string>> = {
     "support.wiseBusinessDesc": "Multi-user access, accounting and using our API.",
     "support.stillNeedHelp": "Still need help?",
     "support.contactUs": "Contact us",
+    "support.noResults": "No results found for your search",
   },
   es: {
     "nav.home": "Inicio",
@@ -512,6 +513,7 @@ const translations: Record<Language, Record<string, string>> = {
     "support.wiseBusinessDesc": "Acceso multiusuario, contabilidad y uso de nuestra API.",
     "support.stillNeedHelp": "¿Aún necesitas ayuda?",
     "support.contactUs": "Contáctanos",
+    "support.noResults": "No se encontraron resultados para tu búsqueda",
   },
 }
 
