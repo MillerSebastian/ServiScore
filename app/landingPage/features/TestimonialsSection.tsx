@@ -3,24 +3,25 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Star } from "lucide-react"
+import { useLanguage } from "@/contexts/language-context"
 
 const testimonials = [
     {
-        name: "Sarah Johnson",
-        role: "Customer Success Manager",
-        content: "ServiScore has completely transformed how we track our team's performance. The insights are invaluable!",
+        name: "Maria García",
+        role: "Homeowner",
+        content: "landing.testimonials.quote1",
         avatar: "/avatars/01.png",
     },
     {
-        name: "Michael Chen",
-        role: "Operations Director",
-        content: "The automated feedback collection has saved us countless hours. Highly recommended!",
+        name: "John Smith",
+        role: "Freelance Designer",
+        content: "landing.testimonials.quote2",
         avatar: "/avatars/02.png",
     },
     {
-        name: "Emily Davis",
-        role: "Team Lead",
-        content: "My team loves the gamification aspects. It's made improving service quality fun and engaging.",
+        name: "Lisa Chen",
+        role: "Small Business Owner",
+        content: "landing.testimonials.quote3",
         avatar: "/avatars/03.png",
     },
     {
@@ -135,12 +136,14 @@ const row1 = [...firstHalf, ...firstHalf]
 const row2 = [...secondHalf, ...secondHalf]
 
 export default function TestimonialsSection() {
+    const { t } = useLanguage()
+    
     return (
         <section id="testimonials" className="py-20 overflow-hidden bg-muted/30">
             <div className="container mx-auto px-4 md:px-6 mb-12 text-center">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl mb-4">Trusted by Industry Leaders</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl mb-4">{t("landing.testimonials.title")}</h2>
                 <p className="text-muted-foreground md:text-xl/relaxed max-w-[800px] mx-auto">
-                    See what our customers have to say about their experience with ServiScore.
+                    {t("landing.testimonials.subtitle")}
                 </p>
             </div>
 
@@ -166,7 +169,7 @@ export default function TestimonialsSection() {
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">"{testimonial.content}"</p>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">"{t(testimonial.content)}"</p>
                                 </CardContent>
                             </Card>
                         ))}
@@ -194,7 +197,7 @@ export default function TestimonialsSection() {
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">"{testimonial.content}"</p>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">"{t(testimonial.content)}"</p>
                                 </CardContent>
                             </Card>
                         ))}

@@ -5,6 +5,7 @@ import About from "./sections/about"
 import LandingTopbar from "./sections/landing-topbar"
 import SupportSection from "./sections/supportSection"
 import Footer from "./sections/footer"
+import ChatbaseWidget from "@/components/ChatbaseWidget"
 
 // New Sections
 import FeaturesSection from "./features/FeaturesSection"
@@ -14,7 +15,8 @@ import CTASection from "./features/CTASection"
 
 export default function LandingPage() {
     return (
-        <main className="min-h-screen bg-black relative">
+        <main className="min-h-screen bg-background relative">
+            <ChatbaseWidget />
             <LandingTopbar />
             <Hero />
 

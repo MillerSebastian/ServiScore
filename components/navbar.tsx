@@ -2,27 +2,41 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, ShoppingBag, User, Star, Languages } from "lucide-react"
+import { Home, ShoppingBag, User, Languages, LayoutDashboard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
+import { ThemeSelector } from "@/components/theme-selector"
 import { useLanguage } from "@/contexts/language-context"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useEffect } from "react"
 
 export function Navbar() {
   const pathname = usePathname()
   const { t, language, setLanguage } = useLanguage()
+  useEffect(() => {
+    // Keep hook to ensure Navbar re-renders on route changes (pathname is already used)
+  }, [pathname])
 
   const navItems = [
     { href: "/", label: t("nav.home"), icon: Home },
-    { href: "/stores", label: t("nav.stores"), icon: Star },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
     { href: "/profile", label: t("nav.profile"), icon: User },
-    { href: "/login", label: t("nav.login"), icon: User },
-    { href: "/shopAuth", label: t("nav.shopLogin"), icon: User }
   ]
 
-  if (pathname === "/login" || pathname === "/shopAuth" || pathname?.startsWith("/landingPage")) return null
+  if (
+    pathname === "/login" ||
+    pathname?.startsWith("/landingPage") ||
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/shop-analytics") ||
+    pathname?.startsWith("/super-profile") ||
+    pathname?.startsWith("/logs") ||
+    pathname?.startsWith("/shops/manage") ||
+    pathname?.startsWith("/shops/metrics") ||
+    pathname?.startsWith("/services/manage") ||
+    pathname?.startsWith("/services/metrics")
+  )
+    return null
 
   return (
     <>
@@ -50,6 +64,18 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary flex items-center gap-1",
+                  pathname?.startsWith("/dashboard")
+                    ? "text-primary font-bold" 
+                    : "text-muted-foreground"
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
             </nav>
             <div className="flex items-center gap-2">
               <DropdownMenu>
@@ -60,14 +86,15 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : ""}>
+                  <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}>
                     English
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : ""}>
+                  <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : "hover:bg-accent/50 cursor-pointer"}>
                     Español
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <ThemeSelector />
               <ModeToggle />
             </div>
           </div>
@@ -90,6 +117,16 @@ export function Navbar() {
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           ))}
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex flex-col items-center justify-center w-full h-full gap-1",
+              pathname?.startsWith("/dashboard") ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            <LayoutDashboard className={cn("h-5 w-5", pathname?.startsWith("/dashboard") && "fill-current")} />
+            <span className="text-[10px] font-medium">Dashboard</span>
+          </Link>
           <div
             className="flex flex-col items-center justify-center w-full h-full gap-1"
             onClick={() => setLanguage(language === "en" ? "es" : "en")}

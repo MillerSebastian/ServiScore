@@ -1,5 +1,7 @@
-import { configureStore, createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { MOCK_USERS, MOCK_STORES, MOCK_SERVICES, type User, type Store, type Service, type Comment } from "./mock-data"
+import { configureStore, createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
+import { MOCK_USERS, MOCK_SERVICES, type User, type Service } from "./mock-data"
+import { serviceService } from "./services/service.service"
+import { auth } from "./firebase"
 
 // --- Auth Slice ---
 interface AuthState {
@@ -27,38 +29,28 @@ const authSlice = createSlice({
   },
 })
 
-// --- Stores Slice ---
-interface StoresState {
-  items: Store[]
-}
+// --- Async Actions ---
+export const fetchServices = createAsyncThunk(
+  'services/fetchServices',
+  async () => {
+    const services = await serviceService.getMyServices()
+    return services
+  }
+)
 
-const initialStateStores: StoresState = {
-  items: MOCK_STORES,
-}
-
-const storesSlice = createSlice({
-  name: "stores",
-  initialState: initialStateStores,
-  reducers: {
-    addStore: (state, action: PayloadAction<Store>) => {
-      state.items.push(action.payload)
-    },
-    addComment: (state, action: PayloadAction<{ storeId: string; comment: Comment }>) => {
-      const store = state.items.find((s) => s.id === action.payload.storeId)
-      if (store) {
-        store.comments.unshift(action.payload.comment)
-      }
-    },
-  },
-})
+// (Stores removed) The app now focuses on services and user/auth state.
 
 // --- Services Slice ---
 interface ServicesState {
   items: Service[]
+  loading: boolean
+  error: string | null
 }
 
 const initialStateServices: ServicesState = {
-  items: MOCK_SERVICES,
+  items: [],
+  loading: false,
+  error: null,
 }
 
 const servicesSlice = createSlice({
@@ -75,22 +67,38 @@ const servicesSlice = createSlice({
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchServices.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchServices.fulfilled, (state, action) => {
+        state.loading = false
+        state.items = action.payload
+      })
+      .addCase(fetchServices.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.error.message || 'Failed to fetch services'
+      })
+  },
 })
 
 // --- Store Configuration ---
 export const store = configureStore({
   reducer: {
     auth: authSlice.reducer,
-    stores: storesSlice.reducer,
     services: servicesSlice.reducer,
   },
 })
+
+// Alias explícito para dejar claro que el store actual expone el slice `services`
+export const servicesStore = store
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       auth: authSlice.reducer,
-      stores: storesSlice.reducer,
       services: servicesSlice.reducer,
     },
   })
@@ -101,5 +109,4 @@ export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 
 export const { login, logout } = authSlice.actions
-export const { addStore, addComment } = storesSlice.actions
 export const { addService, applyToService } = servicesSlice.actions
