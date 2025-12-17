@@ -5,11 +5,10 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_SERVISCORE_API || 'https://serviscor
 async function proxyRequest(request: NextRequest, path: string) {
   try {
     const url = `${BACKEND_URL}/${path}`
+    const contentType = request.headers.get('Content-Type') || ''
     
     // Get headers from the original request
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
+    const headers: Record<string, string> = {}
     
     // Forward authorization header if present
     const authHeader = request.headers.get('Authorization')
@@ -25,17 +24,28 @@ async function proxyRequest(request: NextRequest, path: string) {
     
     // Add body for non-GET requests
     if (request.method !== 'GET' && request.method !== 'HEAD') {
-      try {
-        const body = await request.json()
-        fetchOptions.body = JSON.stringify(body)
-      } catch {
-        // No body or invalid JSON, continue without body
+      // Check if it's a multipart/form-data request (file upload)
+      if (contentType.includes('multipart/form-data')) {
+        // Forward the raw body and content-type header for multipart requests
+        headers['Content-Type'] = contentType
+        fetchOptions.body = await request.arrayBuffer()
+        console.log(`[API Proxy] Forwarding multipart request, body size: ${(fetchOptions.body as ArrayBuffer).byteLength}`)
+      } else {
+        // Handle JSON body
+        try {
+          const body = await request.json()
+          fetchOptions.body = JSON.stringify(body)
+          headers['Content-Type'] = 'application/json'
+        } catch {
+          // No body or invalid JSON, continue without body
+        }
       }
     }
     
     console.log(`[API Proxy] ${request.method} ${url}`)
     
     const response = await fetch(url, fetchOptions)
+    console.log(`[API Proxy] Response status: ${response.status}`)
     const data = await response.json().catch(() => ({}))
     
     if (!response.ok) {

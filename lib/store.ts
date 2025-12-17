@@ -1,6 +1,6 @@
 import { configureStore, createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
 import { MOCK_USERS, MOCK_SERVICES, type User, type Service } from "./mock-data"
-import { serviceService } from "./services/service.service"
+import { servicesService } from "./services/services.service"
 import { auth } from "./firebase"
 
 // --- Auth Slice ---
@@ -33,7 +33,7 @@ const authSlice = createSlice({
 export const fetchServices = createAsyncThunk(
   'services/fetchServices',
   async () => {
-    const services = await serviceService.getMyServices()
+    const services = await servicesService.getAll()
     return services
   }
 )

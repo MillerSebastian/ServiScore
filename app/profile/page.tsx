@@ -10,6 +10,7 @@ import { authService } from "@/lib/services/auth.stub"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner" // Assuming sonner is used, or I'll use console.log/alert if not sure. I'll use simple alert or console for now if toast isn't obvious, but let's check imports. No toast imported. I'll use standard alert or just state for errors.
 import SuperUserVerificationModal from "@/components/SuperUserVerificationModal"
+import { SettingsSheet } from "@/components/settings-sheet"
 
 export default function ProfilePage() {
   const { t } = useLanguage()
@@ -20,6 +21,7 @@ export default function ProfilePage() {
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [superOpen, setSuperOpen] = useState(false)
   const [isSuperVerified, setIsSuperVerified] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const profileInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
@@ -31,7 +33,7 @@ export default function ProfilePage() {
         const userId = localStorage.getItem('user_id')
         console.log('[ProfilePage] backendToken:', backendToken ? 'exists' : 'null')
         console.log('[ProfilePage] userId:', userId)
-        
+
         if (backendToken && userId) {
           console.log('[ProfilePage] Fetching profile...')
           const profile = await authService.getProfile(backendToken)
@@ -143,6 +145,7 @@ export default function ProfilePage() {
         }}
         currentEmail={user?.email}
       />
+      <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
       {/* Hidden Inputs */}
       <input
         type="file"
@@ -195,7 +198,7 @@ export default function ProfilePage() {
               onClick={handleProfilePictureClick}
             >
               <img
-                src={user.profilePicture || user.avatar || "/placeholder.svg"}
+                src={user.photoUrl || user.profilePicture || user.avatar || "/placeholder.svg"}
                 alt={user.fullName || user.name}
                 className="h-full w-full object-cover"
               />
@@ -210,7 +213,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mb-2">
-              <Button variant="outline" size="sm" className="gap-2 bg-transparent w-full sm:w-auto" disabled>
+              <Button variant="outline" size="sm" className="gap-2 bg-transparent w-full sm:w-auto" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4" /> <span className="hidden sm:inline">{t("profile.settings")}</span><span className="sm:hidden">Ajustes</span>
               </Button>
               <Button
