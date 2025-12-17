@@ -34,10 +34,8 @@ const buildUser = (u: any) => ({
 })
 
 export const authService = {
-  // 1. Registration (local via Firebase Auth)
+  // 1. Registration (via local API proxy to avoid CORS)
   async registerUser(data: RegisterData) {
-    // Use new backend endpoint for registration
-    const BASE = process.env.NEXT_PUBLIC_SERVISCORE_API || 'https://serviscore-nest-production.up.railway.app'
     const [firstName, ...lastParts] = (data.fullName || '').trim().split(' ')
     const payload = {
       accessData: {
@@ -51,7 +49,8 @@ export const authService = {
         accessId: 1,
       },
     }
-    const res = await fetch(`${BASE}/auth/register`, {
+    // Use local API proxy to avoid CORS issues in production
+    const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -79,11 +78,11 @@ export const authService = {
     }
   },
 
-  // 2. Login (Backend API)
+  // 2. Login (via local API proxy to avoid CORS)
   async loginUser(email: string, password: string): Promise<string> {
-    const BASE = process.env.NEXT_PUBLIC_SERVISCORE_API || 'https://serviscore-nest-production.up.railway.app'
-    console.log('[authService.loginUser] Calling:', `${BASE}/auth/login`)
-    const res = await fetch(`${BASE}/auth/login`, {
+    console.log('[authService.loginUser] Calling local proxy: /api/auth/login')
+    // Use local API proxy to avoid CORS issues in production
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -134,9 +133,8 @@ export const authService = {
     return { ok: true }
   },
 
-  // 4. Get User Profile (Backend API)
+  // 4. Get User Profile (via local API proxy to avoid CORS)
   async getProfile(idToken: string) {
-    const BASE = process.env.NEXT_PUBLIC_SERVISCORE_API || 'https://serviscore-nest-production.up.railway.app'
     const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null
     const token = idToken || (typeof window !== 'undefined' ? localStorage.getItem('access_token') : null)
     
@@ -146,9 +144,9 @@ export const authService = {
       throw new Error('Not authenticated - missing user_id or token')
     }
     
-    // Fetch user data from /users/{id}
-    console.log('[authService.getProfile] Fetching from:', `${BASE}/users/${userId}`)
-    const res = await fetch(`${BASE}/users/${userId}`, {
+    // Use local API proxy to avoid CORS issues in production
+    console.log('[authService.getProfile] Fetching from proxy:', `/api/proxy/users/${userId}`)
+    const res = await fetch(`/api/proxy/users/${userId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -163,10 +161,10 @@ export const authService = {
     const userData = await res.json()
     console.log('[authService.getProfile] User data from backend:', userData)
     
-    // Fetch user image
+    // Fetch user image via proxy
     let profilePicture: string | undefined
     try {
-      const imgRes = await fetch(`${BASE}/user-images`, {
+      const imgRes = await fetch(`/api/proxy/user-images`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
-const BASE_URL = process.env.NEXT_PUBLIC_SERVISCORE_API || 'https://serviscore-nest-production.up.railway.app'
+// Use local API proxy to avoid CORS issues in production
+const BASE_URL = '/api/proxy'
 
 export interface CreateServiceDto {
   service_category_id: number

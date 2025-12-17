@@ -5,7 +5,8 @@ import {
     RegisterAdminResponse
 } from '../types/admin.types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SERVISCORE_API || 'https://serviscore-nest-production.up.railway.app'
+// Use local API proxy to avoid CORS issues in production
+const BASE_URL = '/api/proxy'
 
 function getToken(): string | null {
     return typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
