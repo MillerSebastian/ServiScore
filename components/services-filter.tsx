@@ -25,13 +25,19 @@ export interface FilterState {
   status: string
 }
 
+interface Category {
+  id: number
+  name: string
+}
+
 interface ServicesFilterProps {
   filters: FilterState
   onFilterChange: (filters: FilterState) => void
   onReset: () => void
+  categories?: Category[]
 }
 
-export function ServicesFilter({ filters, onFilterChange, onReset }: ServicesFilterProps) {
+export function ServicesFilter({ filters, onFilterChange, onReset, categories = [] }: ServicesFilterProps) {
   const [open, setOpen] = useState(false)
   const { t } = useLanguage()
 
@@ -39,7 +45,7 @@ export function ServicesFilter({ filters, onFilterChange, onReset }: ServicesFil
     filters.category !== "all",
     filters.location !== "all",
     filters.status !== "all",
-    filters.minPrice > 0 || filters.maxPrice < 500,
+    filters.minPrice > 0 || filters.maxPrice < 1000000,
   ].filter(Boolean).length
 
   const handleReset = () => {
@@ -77,10 +83,11 @@ export function ServicesFilter({ filters, onFilterChange, onReset }: ServicesFil
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
-                <SelectItem value="home">Home Services</SelectItem>
-                <SelectItem value="pets">Pet Care</SelectItem>
-                <SelectItem value="tech">Tech Support</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name.toLowerCase()}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -137,8 +144,8 @@ export function ServicesFilter({ filters, onFilterChange, onReset }: ServicesFil
                 value={[filters.maxPrice]}
                 onValueChange={([value]) => onFilterChange({ ...filters, maxPrice: value })}
                 min={filters.minPrice + 10}
-                max={500}
-                step={5}
+                max={100000}
+                step={100}
               />
             </div>
           </div>

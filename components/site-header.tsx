@@ -1,8 +1,11 @@
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { ModeToggle } from "./mode-toggle"
 import { ThemeSelector } from "./theme-selector"
 import { LanguageToggle } from "./language-toggle"
+import { LayoutDashboard } from "lucide-react"
 
 export function SiteHeader() {
   return (
@@ -14,6 +17,12 @@ export function SiteHeader() {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <h1 className="text-base font-medium">Documents</h1>
+        <Link href="/dashboard" className="ml-2">
+          <Button variant="outline" size="sm" className="gap-2">
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
+          </Button>
+        </Link>
         <div className="ml-auto flex items-center gap-2">
           <LanguageToggle />
           <ThemeSelector />

@@ -2,34 +2,21 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, ShoppingBag, User, Star, Languages, LayoutDashboard } from "lucide-react"
+import { Home, ShoppingBag, User, Languages, LayoutDashboard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ThemeSelector } from "@/components/theme-selector"
 import { useLanguage } from "@/contexts/language-context"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 export function Navbar() {
   const pathname = usePathname()
   const { t, language, setLanguage } = useLanguage()
-  const [isAdmin, setIsAdmin] = useState(false)
-
   useEffect(() => {
-    // Check if user is admin from localStorage
-    const adminData = localStorage.getItem('admin')
-    if (adminData) {
-      try {
-        const admin = JSON.parse(adminData)
-        setIsAdmin(admin.role === 'admin')
-      } catch (e) {
-        setIsAdmin(false)
-      }
-    } else {
-      setIsAdmin(false)
-    }
-  }, [pathname]) // Re-check when pathname changes
+    // Keep hook to ensure Navbar re-renders on route changes (pathname is already used)
+  }, [pathname])
 
   const navItems = [
     { href: "/", label: t("nav.home"), icon: Home },
@@ -77,20 +64,18 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              {isAdmin && (
-                <Link
-                  href="/dashboard"
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary flex items-center gap-1",
-                    pathname?.startsWith("/dashboard")
-                      ? "text-primary font-bold"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Link>
-              )}
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary flex items-center gap-1",
+                  pathname?.startsWith("/dashboard")
+                    ? "text-primary font-bold" 
+                    : "text-muted-foreground"
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
             </nav>
             <div className="flex items-center gap-2">
               <DropdownMenu>
@@ -132,18 +117,16 @@ export function Navbar() {
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           ))}
-          {isAdmin && (
-            <Link
-              href="/dashboard"
-              className={cn(
-                "flex flex-col items-center justify-center w-full h-full gap-1",
-                pathname?.startsWith("/dashboard") ? "text-primary" : "text-muted-foreground",
-              )}
-            >
-              <LayoutDashboard className={cn("h-5 w-5", pathname?.startsWith("/dashboard") && "fill-current")} />
-              <span className="text-[10px] font-medium">Dashboard</span>
-            </Link>
-          )}
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex flex-col items-center justify-center w-full h-full gap-1",
+              pathname?.startsWith("/dashboard") ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            <LayoutDashboard className={cn("h-5 w-5", pathname?.startsWith("/dashboard") && "fill-current")} />
+            <span className="text-[10px] font-medium">Dashboard</span>
+          </Link>
           <div
             className="flex flex-col items-center justify-center w-full h-full gap-1"
             onClick={() => setLanguage(language === "en" ? "es" : "en")}

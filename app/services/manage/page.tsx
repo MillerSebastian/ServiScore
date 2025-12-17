@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { servicesService, Service, CreateServiceDto } from "@/lib/services/services.service"
+import { serviceCategoriesService, ServiceCategory } from "@/lib/services/service-categories.service"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import {
@@ -52,141 +54,89 @@ import {
   Trash2,
   Briefcase,
   TrendingUp,
-  Activity,
   DollarSign,
-  Star,
-  Clock,
+  MapPin,
+  Calendar,
   Filter,
   ArrowUpDown,
-  PieChart,
-  BarChart3,
-  Users,
+  Loader2,
 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-// Mock data for services
-const mockServices = [
-  {
-    id: 1,
-    name: "Web Development",
-    provider: "Tech Solutions Inc.",
-    category: "Technology",
-    price: 5000,
-    duration: "2-4 weeks",
-    status: "Active",
-    rating: 4.9,
-    bookings: 45,
-    description: "Custom web application development using modern technologies",
-    createdAt: "2024-10-15",
-  },
-  {
-    id: 2,
-    name: "Digital Marketing",
-    provider: "Marketing Pro",
-    category: "Marketing",
-    price: 2500,
-    duration: "1 month",
-    status: "Active",
-    rating: 4.8,
-    bookings: 67,
-    description: "Comprehensive digital marketing campaigns for businesses",
-    createdAt: "2024-11-20",
-  },
-  {
-    id: 3,
-    name: "Graphic Design",
-    provider: "Creative Studio",
-    category: "Design",
-    price: 800,
-    duration: "1-2 weeks",
-    status: "Active",
-    rating: 4.7,
-    bookings: 89,
-    description: "Professional graphic design services for branding and marketing",
-    createdAt: "2024-09-10",
-  },
-  {
-    id: 4,
-    name: "Consulting Services",
-    provider: "Business Advisors",
-    category: "Consulting",
-    price: 3500,
-    duration: "Flexible",
-    status: "Inactive",
-    rating: 4.9,
-    bookings: 34,
-    description: "Expert business consulting and strategy development",
-    createdAt: "2024-08-05",
-  },
-  {
-    id: 5,
-    name: "Content Writing",
-    provider: "Content Creators",
-    category: "Writing",
-    price: 500,
-    duration: "3-5 days",
-    status: "Active",
-    rating: 4.6,
-    bookings: 112,
-    description: "High-quality content writing for websites and blogs",
-    createdAt: "2024-12-01",
-  },
-]
 
-const categories = [
-  "Technology",
-  "Marketing",
-  "Design",
-  "Consulting",
-  "Writing",
-  "Education",
-  "Health & Wellness",
-  "Photography",
-  "Legal",
-  "Other",
-]
+// Status mapping
+const statusMap: Record<number, string> = {
+  1: "Active",
+  2: "Inactive",
+  3: "Pending",
+}
 
 export default function ServiceManagementPage() {
-  const [services, setServices] = useState(mockServices)
+  const [services, setServices] = useState<Service[]>([])
+  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingService, setEditingService] = useState<any>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editingService, setEditingService] = useState<Service | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
-  const [sortBy, setSortBy] = useState("name")
+  const [sortBy, setSortBy] = useState("title")
 
-  // Form state
+  // Form state matching backend fields
   const [formData, setFormData] = useState({
-    name: "",
-    provider: "",
-    category: "",
-    price: "",
-    duration: "",
-    description: "",
-    status: "Active",
+    service_title: "",
+    service_description: "",
+    service_category_id: "",
+    service_price: "",
+    service_location: "",
+    service_datetime: "",
+    status_id: "1",
   })
 
-  const handleOpenModal = (service?: any) => {
+  // Fetch services and categories on mount
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true)
+      const [servicesData, categoriesData] = await Promise.all([
+        servicesService.getAll(),
+        serviceCategoriesService.getAll()
+      ])
+      setServices(servicesData)
+      setCategories(categoriesData)
+    } catch (error) {
+      console.error('Failed to fetch data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleOpenModal = (service?: Service) => {
     if (service) {
       setEditingService(service)
       setFormData({
-        name: service.name,
-        provider: service.provider,
-        category: service.category,
-        price: service.price.toString(),
-        duration: service.duration,
-        description: service.description,
-        status: service.status,
+        service_title: service.service_title || "",
+        service_description: service.service_description || "",
+        service_category_id: String(service.service_category_id || ""),
+        service_price: String(service.service_price || ""),
+        service_location: service.service_location || "",
+        service_datetime: service.service_datetime ? service.service_datetime.slice(0, 16) : "",
+        status_id: String(service.status_id || "1"),
       })
     } else {
       setEditingService(null)
       setFormData({
-        name: "",
-        provider: "",
-        category: "",
-        price: "",
-        duration: "",
-        description: "",
-        status: "Active",
+        service_title: "",
+        service_description: "",
+        service_category_id: "",
+        service_price: "",
+        service_location: "",
+        service_datetime: "",
+        status_id: "1",
       })
     }
     setIsModalOpen(true)
@@ -196,75 +146,89 @@ export default function ServiceManagementPage() {
     setIsModalOpen(false)
     setEditingService(null)
     setFormData({
-      name: "",
-      provider: "",
-      category: "",
-      price: "",
-      duration: "",
-      description: "",
-      status: "Active",
+      service_title: "",
+      service_description: "",
+      service_category_id: "",
+      service_price: "",
+      service_location: "",
+      service_datetime: "",
+      status_id: "1",
     })
   }
 
-  const handleSaveService = () => {
-    if (editingService) {
-      setServices(services.map(service => 
-        service.id === editingService.id 
-          ? { 
-              ...service, 
-              ...formData, 
-              price: parseFloat(formData.price) 
-            }
-          : service
-      ))
-    } else {
-      const newService = {
-        id: services.length + 1,
-        ...formData,
-        price: parseFloat(formData.price),
-        rating: 0,
-        bookings: 0,
-        createdAt: new Date().toISOString().split('T')[0],
+  const handleSaveService = async () => {
+    try {
+      setIsSaving(true)
+      const userId = localStorage.getItem('user_id')
+      
+      const payload: CreateServiceDto = {
+        service_title: formData.service_title,
+        service_description: formData.service_description,
+        service_category_id: Number(formData.service_category_id),
+        service_price: Number(formData.service_price),
+        service_location: formData.service_location,
+        service_datetime: formData.service_datetime ? new Date(formData.service_datetime).toISOString() : new Date().toISOString(),
+        status_id: Number(formData.status_id),
+        user_id: Number(userId) || 1,
       }
-      setServices([...services, newService])
+
+      if (editingService) {
+        await servicesService.update(editingService.id, payload)
+      } else {
+        await servicesService.create(payload)
+      }
+      
+      await fetchData()
+      handleCloseModal()
+    } catch (error) {
+      console.error('Failed to save service:', error)
+      alert('Failed to save service')
+    } finally {
+      setIsSaving(false)
     }
-    handleCloseModal()
   }
 
-  const handleDeleteService = (id: number) => {
+  const handleDeleteService = async (id: number) => {
     if (confirm("Are you sure you want to delete this service?")) {
-      setServices(services.filter(service => service.id !== id))
+      try {
+        await servicesService.delete(id)
+        await fetchData()
+      } catch (error) {
+        console.error('Failed to delete service:', error)
+        alert('Failed to delete service')
+      }
     }
   }
+
+  // Build category map from loaded categories
+  const categoryMap: Record<number, string> = categories.reduce((acc, cat) => {
+    acc[cat.id] = cat.name
+    return acc
+  }, {} as Record<number, string>)
 
   // Filter and sort logic
   const filteredServices = services
     .filter(service => {
-      const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           service.provider.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = filterCategory === "all" || service.category === filterCategory
-      const matchesStatus = filterStatus === "all" || service.status === filterStatus
+      const matchesSearch = service.service_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           service.service_description?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = filterCategory === "all" || String(service.service_category_id) === filterCategory
+      const matchesStatus = filterStatus === "all" || String(service.status_id) === filterStatus
       return matchesSearch && matchesCategory && matchesStatus
     })
     .sort((a, b) => {
-      if (sortBy === "name") return a.name.localeCompare(b.name)
-      if (sortBy === "category") return a.category.localeCompare(b.category)
-      if (sortBy === "price") return b.price - a.price
-      if (sortBy === "bookings") return b.bookings - a.bookings
-      if (sortBy === "rating") return b.rating - a.rating
-      if (sortBy === "date") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (sortBy === "title") return (a.service_title || "").localeCompare(b.service_title || "")
+      if (sortBy === "price") return (b.service_price || 0) - (a.service_price || 0)
+      if (sortBy === "date") return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       return 0
     })
 
   // Metrics calculations
   const totalServices = services.length
-  const activeServices = services.filter(s => s.status === "Active").length
-  const inactiveServices = services.filter(s => s.status === "Inactive").length
-  const totalRevenue = services.reduce((sum, s) => sum + (s.price * s.bookings), 0)
-  const totalBookings = services.reduce((sum, s) => sum + s.bookings, 0)
-  const avgRating = services.reduce((sum, s) => sum + s.rating, 0) / totalServices
+  const activeServices = services.filter(s => s.status_id === 1).length
+  const totalRevenue = services.reduce((sum, s) => sum + (s.service_price || 0), 0)
 
   const recentServices = services.filter(s => {
+    if (!s.createdAt) return false
     const date = new Date(s.createdAt)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -272,7 +236,8 @@ export default function ServiceManagementPage() {
   }).length
 
   const categoryCounts = services.reduce((acc, service) => {
-    acc[service.category] = (acc[service.category] || 0) + 1
+    const catName = categoryMap[service.service_category_id] || "Other"
+    acc[catName] = (acc[catName] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
@@ -306,7 +271,7 @@ export default function ServiceManagementPage() {
           </div>
 
           {/* Metrics Dashboard */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Services</CardTitle>
@@ -321,37 +286,13 @@ export default function ServiceManagementPage() {
             </Card>
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-                <Users className="h-4 w-4 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalBookings}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Across all services
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
                 <DollarSign className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  From all bookings
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-                <Star className="h-4 w-4 text-yellow-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{avgRating.toFixed(1)}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Overall satisfaction
+                  Combined service prices
                 </p>
               </CardContent>
             </Card>
@@ -367,40 +308,19 @@ export default function ServiceManagementPage() {
                 </p>
               </CardContent>
             </Card>
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Categories</CardTitle>
+                <Filter className="h-4 w-4 text-purple-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{Object.keys(categoryCounts).length}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Different categories
+                </p>
+              </CardContent>
+            </Card>
           </div>
-
-          {/* Category Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Services by Category
-              </CardTitle>
-              <CardDescription>Distribution of services across categories</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {topCategories.map(([category, count]) => (
-                  <div key={category} className="flex items-center gap-4">
-                    <div className="min-w-32 text-sm font-medium">{category}</div>
-                    <div className="flex-1">
-                      <div className="h-8 bg-muted rounded-lg overflow-hidden">
-                        <div
-                          className="h-full bg-linear-to-r from-purple-500 to-pink-500 flex items-center justify-end px-3 text-white text-sm font-medium"
-                          style={{ width: `${(count / totalServices) * 100}%` }}
-                        >
-                          {count}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="min-w-16 text-sm text-muted-foreground text-right">
-                      {((count / totalServices) * 100).toFixed(1)}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Service List */}
           <Card>
@@ -428,7 +348,7 @@ export default function ServiceManagementPage() {
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
                       {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -438,8 +358,8 @@ export default function ServiceManagementPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
+                      <SelectItem value="1">Active</SelectItem>
+                      <SelectItem value="2">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={sortBy} onValueChange={setSortBy}>
@@ -448,11 +368,8 @@ export default function ServiceManagementPage() {
                       <SelectValue placeholder="Sort" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="category">Category</SelectItem>
+                      <SelectItem value="title">Title</SelectItem>
                       <SelectItem value="price">Price</SelectItem>
-                      <SelectItem value="bookings">Bookings</SelectItem>
-                      <SelectItem value="rating">Rating</SelectItem>
                       <SelectItem value="date">Date</SelectItem>
                     </SelectContent>
                   </Select>
@@ -460,90 +377,97 @@ export default function ServiceManagementPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Service Name</TableHead>
-                      <TableHead>Provider</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Rating</TableHead>
-                      <TableHead>Bookings</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredServices.length === 0 ? (
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border">
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                          No services found. Try adjusting your filters or create a new service.
-                        </TableCell>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ) : (
-                      filteredServices.map((service) => (
-                        <TableRow key={service.id}>
-                          <TableCell className="font-medium">{service.name}</TableCell>
-                          <TableCell>{service.provider}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{service.category}</Badge>
-                          </TableCell>
-                          <TableCell className="font-semibold">${service.price.toLocaleString()}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 text-muted-foreground" />
-                              {service.duration}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                              {service.rating}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{service.bookings}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={service.status === "Active" ? "default" : "secondary"}
-                              className={service.status === "Active" ? "bg-green-500/10 text-green-700 border-green-500/20" : ""}
-                            >
-                              {service.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleOpenModal(service)}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleDeleteService(service.id)}
-                                  className="text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredServices.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            No services found. Try adjusting your filters or create a new service.
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                      ) : (
+                        filteredServices.map((service) => (
+                          <TableRow key={service.id}>
+                            <TableCell className="font-medium">
+                              <div>
+                                <p className="font-semibold">{service.service_title}</p>
+                                <p className="text-xs text-muted-foreground line-clamp-1">{service.service_description}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{categoryMap[service.service_category_id] || "Other"}</Badge>
+                            </TableCell>
+                            <TableCell className="font-semibold">${service.service_price?.toLocaleString()}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-muted-foreground" />
+                                {service.service_location || "-"}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-muted-foreground" />
+                                {service.service_datetime ? new Date(service.service_datetime).toLocaleDateString() : "-"}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={service.status_id === 1 ? "default" : "secondary"}
+                                className={service.status_id === 1 ? "bg-green-500/10 text-green-700 border-green-500/20" : ""}
+                              >
+                                {statusMap[service.status_id] || "Unknown"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleOpenModal(service)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteService(service.id)}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
               <div className="mt-4 text-sm text-muted-foreground">
                 Showing {filteredServices.length} of {totalServices} services
               </div>
@@ -554,7 +478,7 @@ export default function ServiceManagementPage() {
 
       {/* Service Management Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-150">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingService ? "Edit Service" : "Create New Service"}</DialogTitle>
             <DialogDescription>
@@ -563,33 +487,24 @@ export default function ServiceManagementPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Service Name *</Label>
+              <Label htmlFor="title">Service Title *</Label>
               <Input
-                id="name"
-                placeholder="Enter service name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="provider">Provider/Company *</Label>
-              <Input
-                id="provider"
-                placeholder="Enter provider name"
-                value={formData.provider}
-                onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+                id="title"
+                placeholder="Enter service title"
+                value={formData.service_title}
+                onChange={(e) => setFormData({ ...formData, service_title: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <Select value={formData.service_category_id} onValueChange={(value) => setFormData({ ...formData, service_category_id: value })}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -600,42 +515,52 @@ export default function ServiceManagementPage() {
                   id="price"
                   type="number"
                   placeholder="0.00"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  value={formData.service_price}
+                  onChange={(e) => setFormData({ ...formData, service_price: e.target.value })}
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="duration">Duration *</Label>
+                <Label htmlFor="location">Location *</Label>
                 <Input
-                  id="duration"
-                  placeholder="e.g., 2-4 weeks"
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                  id="location"
+                  placeholder="e.g., City A area"
+                  value={formData.service_location}
+                  onChange={(e) => setFormData({ ...formData, service_location: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="datetime">Date & Time</Label>
+                <Input
+                  id="datetime"
+                  type="datetime-local"
+                  value={formData.service_datetime}
+                  onChange={(e) => setFormData({ ...formData, service_datetime: e.target.value })}
+                />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status_id} onValueChange={(value) => setFormData({ ...formData, status_id: value })}>
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Active</SelectItem>
+                  <SelectItem value="2">Inactive</SelectItem>
+                  <SelectItem value="3">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 placeholder="Enter service description"
                 rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={formData.service_description}
+                onChange={(e) => setFormData({ ...formData, service_description: e.target.value })}
               />
             </div>
           </div>
@@ -645,8 +570,9 @@ export default function ServiceManagementPage() {
             </Button>
             <Button 
               onClick={handleSaveService}
-              disabled={!formData.name || !formData.provider || !formData.category || !formData.price || !formData.duration}
+              disabled={!formData.service_title || !formData.service_category_id || !formData.service_price || !formData.service_location || isSaving}
             >
+              {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {editingService ? "Update Service" : "Create Service"}
             </Button>
           </DialogFooter>

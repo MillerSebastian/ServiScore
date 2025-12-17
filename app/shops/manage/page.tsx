@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { storesService, Store, CreateStoreDto } from "@/lib/services/stores.service"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import {
@@ -50,133 +51,83 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
-  Store,
+  Store as StoreIcon,
   TrendingUp,
-  Activity,
-  MapPin,
   Phone,
-  Mail,
-  Calendar,
   Filter,
   ArrowUpDown,
-  PieChart,
-  BarChart3,
+  Loader2,
+  Heart,
 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-// Mock data for shops
-const mockShops = [
-  {
-    id: 1,
-    name: "Tech Haven",
-    address: "123 Main St, New York, NY 10001",
-    contact: "+1 (555) 123-4567",
-    email: "contact@techhaven.com",
-    category: "Electronics",
-    status: "Active",
-    description: "Premium electronics and gadgets store",
-    createdAt: "2024-10-15",
-  },
-  {
-    id: 2,
-    name: "Fashion Hub",
-    address: "456 Style Ave, Los Angeles, CA 90001",
-    contact: "+1 (555) 234-5678",
-    email: "info@fashionhub.com",
-    category: "Clothing",
-    status: "Active",
-    description: "Latest trends in fashion and apparel",
-    createdAt: "2024-11-20",
-  },
-  {
-    id: 3,
-    name: "Home Decor Plus",
-    address: "789 Design Blvd, Chicago, IL 60601",
-    contact: "+1 (555) 345-6789",
-    email: "hello@homedecor.com",
-    category: "Home & Garden",
-    status: "Active",
-    description: "Beautiful home decor and furniture",
-    createdAt: "2024-09-10",
-  },
-  {
-    id: 4,
-    name: "Sports World",
-    address: "321 Fitness Rd, Miami, FL 33101",
-    contact: "+1 (555) 456-7890",
-    email: "sales@sportsworld.com",
-    category: "Sports",
-    status: "Inactive",
-    description: "Everything for sports and fitness enthusiasts",
-    createdAt: "2024-08-05",
-  },
-  {
-    id: 5,
-    name: "Book Nook",
-    address: "654 Library Ln, Seattle, WA 98101",
-    contact: "+1 (555) 567-8901",
-    email: "contact@booknook.com",
-    category: "Books",
-    status: "Active",
-    description: "Wide selection of books and reading materials",
-    createdAt: "2024-12-01",
-  },
-]
+// Categories mapping (id -> name)
+const categoryMap: Record<number, string> = {
+  1: "Electronics",
+  2: "Clothing",
+  3: "Home & Garden",
+  4: "Sports",
+  5: "Books",
+  6: "Food & Beverage",
+  7: "Health & Beauty",
+  8: "Automotive",
+  9: "Toys & Games",
+  10: "Coffee Shop",
+}
 
-const categories = [
-  "Electronics",
-  "Clothing",
-  "Home & Garden",
-  "Sports",
-  "Books",
-  "Food & Beverage",
-  "Health & Beauty",
-  "Automotive",
-  "Toys & Games",
-  "Other",
-]
+const categories = Object.entries(categoryMap).map(([id, name]) => ({ id: Number(id), name }))
 
 export default function ShopManagementPage() {
-  const [shops, setShops] = useState(mockShops)
+  const [shops, setShops] = useState<Store[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingShop, setEditingShop] = useState<any>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editingShop, setEditingShop] = useState<Store | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
-  const [filterStatus, setFilterStatus] = useState("all")
   const [sortBy, setSortBy] = useState("name")
 
-  // Form state
+  // Form state matching backend fields
   const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    contact: "",
-    email: "",
-    category: "",
-    description: "",
-    status: "Active",
+    store_name: "",
+    store_description: "",
+    store_phone: "",
+    storeCategoryId: "",
   })
 
-  const handleOpenModal = (shop?: any) => {
+  // Fetch shops on mount
+  useEffect(() => {
+    fetchShops()
+  }, [])
+
+  const fetchShops = async () => {
+    try {
+      setIsLoading(true)
+      const data = await storesService.getAll()
+      setShops(data)
+    } catch (error) {
+      console.error('Failed to fetch shops:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleOpenModal = (shop?: Store) => {
     if (shop) {
       setEditingShop(shop)
       setFormData({
-        name: shop.name,
-        address: shop.address,
-        contact: shop.contact,
-        email: shop.email,
-        category: shop.category,
-        description: shop.description,
-        status: shop.status,
+        store_name: shop.store_name || "",
+        store_description: shop.store_description || "",
+        store_phone: shop.store_phone || "",
+        storeCategoryId: String(shop.storeCategoryId || ""),
       })
     } else {
       setEditingShop(null)
       setFormData({
-        name: "",
-        address: "",
-        contact: "",
-        email: "",
-        category: "",
-        description: "",
-        status: "Active",
+        store_name: "",
+        store_description: "",
+        store_phone: "",
+        storeCategoryId: "",
       })
     }
     setIsModalOpen(true)
@@ -186,64 +137,75 @@ export default function ShopManagementPage() {
     setIsModalOpen(false)
     setEditingShop(null)
     setFormData({
-      name: "",
-      address: "",
-      contact: "",
-      email: "",
-      category: "",
-      description: "",
-      status: "Active",
+      store_name: "",
+      store_description: "",
+      store_phone: "",
+      storeCategoryId: "",
     })
   }
 
-  const handleSaveShop = () => {
-    if (editingShop) {
-      // Update existing shop
-      setShops(shops.map(shop => 
-        shop.id === editingShop.id 
-          ? { ...shop, ...formData }
-          : shop
-      ))
-    } else {
-      // Create new shop
-      const newShop = {
-        id: shops.length + 1,
-        ...formData,
-        createdAt: new Date().toISOString().split('T')[0],
+  const handleSaveShop = async () => {
+    try {
+      setIsSaving(true)
+      
+      const payload: CreateStoreDto = {
+        store_name: formData.store_name,
+        store_description: formData.store_description,
+        store_phone: formData.store_phone,
+        storeCategoryId: Number(formData.storeCategoryId),
+        store_total_favourites: 0,
       }
-      setShops([...shops, newShop])
+
+      if (editingShop) {
+        await storesService.update(editingShop.id, payload)
+      } else {
+        await storesService.create(payload)
+      }
+      
+      await fetchShops()
+      handleCloseModal()
+    } catch (error) {
+      console.error('Failed to save shop:', error)
+      alert('Failed to save shop')
+    } finally {
+      setIsSaving(false)
     }
-    handleCloseModal()
   }
 
-  const handleDeleteShop = (id: number) => {
+  const handleDeleteShop = async (id: number) => {
     if (confirm("Are you sure you want to delete this shop?")) {
-      setShops(shops.filter(shop => shop.id !== id))
+      try {
+        await storesService.delete(id)
+        await fetchShops()
+      } catch (error) {
+        console.error('Failed to delete shop:', error)
+        alert('Failed to delete shop')
+      }
     }
   }
 
   // Filter and sort logic
   const filteredShops = shops
     .filter(shop => {
-      const matchesSearch = shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           shop.address.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = filterCategory === "all" || shop.category === filterCategory
-      const matchesStatus = filterStatus === "all" || shop.status === filterStatus
-      return matchesSearch && matchesCategory && matchesStatus
+      const matchesSearch = shop.store_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           shop.store_description?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = filterCategory === "all" || String(shop.storeCategoryId) === filterCategory
+      return matchesSearch && matchesCategory
     })
     .sort((a, b) => {
-      if (sortBy === "name") return a.name.localeCompare(b.name)
-      if (sortBy === "category") return a.category.localeCompare(b.category)
-      if (sortBy === "status") return a.status.localeCompare(b.status)
-      if (sortBy === "date") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (sortBy === "name") return (a.store_name || "").localeCompare(b.store_name || "")
+      if (sortBy === "category") return (a.storeCategoryId || 0) - (b.storeCategoryId || 0)
+      if (sortBy === "favourites") return (b.store_total_favourites || 0) - (a.store_total_favourites || 0)
+      if (sortBy === "date") return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       return 0
     })
 
   // Metrics calculations
   const totalShops = shops.length
-  const activeShops = shops.filter(s => s.status === "Active").length
-  const inactiveShops = shops.filter(s => s.status === "Inactive").length
+  const totalFavourites = shops.reduce((sum, s) => sum + (s.store_total_favourites || 0), 0)
+
   const recentShops = shops.filter(s => {
+    if (!s.createdAt) return false
     const date = new Date(s.createdAt)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -251,13 +213,10 @@ export default function ShopManagementPage() {
   }).length
 
   const categoryCounts = shops.reduce((acc, shop) => {
-    acc[shop.category] = (acc[shop.category] || 0) + 1
+    const catName = categoryMap[shop.storeCategoryId] || "Other"
+    acc[catName] = (acc[catName] || 0) + 1
     return acc
   }, {} as Record<string, number>)
-
-  const topCategories = Object.entries(categoryCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
 
   return (
     <SidebarProvider
@@ -289,87 +248,52 @@ export default function ShopManagementPage() {
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Shops</CardTitle>
-                <Store className="h-4 w-4 text-blue-500" />
+                <StoreIcon className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalShops}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Across all categories
+                  Registered shops
                 </p>
               </CardContent>
             </Card>
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Shops</CardTitle>
-                <Activity className="h-4 w-4 text-green-500" />
+                <CardTitle className="text-sm font-medium">Total Favourites</CardTitle>
+                <Heart className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{activeShops}</div>
+                <div className="text-2xl font-bold">{totalFavourites}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {inactiveShops} inactive
+                  Combined favourites
                 </p>
               </CardContent>
             </Card>
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Added (30 days)</CardTitle>
-                <TrendingUp className="h-4 w-4 text-purple-500" />
+                <CardTitle className="text-sm font-medium">New (30 days)</CardTitle>
+                <TrendingUp className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{recentShops}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  New this month
+                  Added this month
                 </p>
               </CardContent>
             </Card>
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Top Category</CardTitle>
-                <PieChart className="h-4 w-4 text-orange-500" />
+                <CardTitle className="text-sm font-medium">Categories</CardTitle>
+                <Filter className="h-4 w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {topCategories[0]?.[0] || "N/A"}
-                </div>
+                <div className="text-2xl font-bold">{Object.keys(categoryCounts).length}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {topCategories[0]?.[1] || 0} shops
+                  Different categories
                 </p>
               </CardContent>
             </Card>
           </div>
-
-          {/* Category Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Shops by Category
-              </CardTitle>
-              <CardDescription>Distribution of shops across categories</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {topCategories.map(([category, count]) => (
-                  <div key={category} className="flex items-center gap-4">
-                    <div className="min-w-32 text-sm font-medium">{category}</div>
-                    <div className="flex-1">
-                      <div className="h-8 bg-muted rounded-lg overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-end px-3 text-white text-sm font-medium"
-                          style={{ width: `${(count / totalShops) * 100}%` }}
-                        >
-                          {count}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="min-w-16 text-sm text-muted-foreground text-right">
-                      {((count / totalShops) * 100).toFixed(1)}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Shop List */}
           <Card>
@@ -397,18 +321,8 @@ export default function ShopManagementPage() {
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
                       {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-full sm:w-32">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={sortBy} onValueChange={setSortBy}>
@@ -419,7 +333,7 @@ export default function ShopManagementPage() {
                     <SelectContent>
                       <SelectItem value="name">Name</SelectItem>
                       <SelectItem value="category">Category</SelectItem>
-                      <SelectItem value="status">Status</SelectItem>
+                      <SelectItem value="favourites">Favourites</SelectItem>
                       <SelectItem value="date">Date</SelectItem>
                     </SelectContent>
                   </Select>
@@ -427,88 +341,86 @@ export default function ShopManagementPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Shop Name</TableHead>
-                      <TableHead>Address</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredShops.length === 0 ? (
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border">
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          No shops found. Try adjusting your filters or create a new shop.
-                        </TableCell>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Favourites</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ) : (
-                      filteredShops.map((shop) => (
-                        <TableRow key={shop.id}>
-                          <TableCell className="font-medium">{shop.name}</TableCell>
-                          <TableCell className="max-w-xs truncate">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <span className="truncate">{shop.address}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{shop.category}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-1 text-sm">
-                                <Phone className="h-3 w-3 text-muted-foreground" />
-                                {shop.contact}
-                              </div>
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Mail className="h-3 w-3" />
-                                {shop.email}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={shop.status === "Active" ? "default" : "secondary"}
-                              className={shop.status === "Active" ? "bg-green-500/10 text-green-700 border-green-500/20" : ""}
-                            >
-                              {shop.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleOpenModal(shop)}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleDeleteShop(shop.id)}
-                                  className="text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredShops.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            No shops found. Try adjusting your filters or create a new shop.
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                      ) : (
+                        filteredShops.map((shop, idx) => (
+                          <TableRow key={shop.id ? `shop-${shop.id}` : `shop-idx-${idx}`}>
+                            <TableCell className="font-medium">
+                              <div>
+                                <p className="font-semibold">{shop.store_name}</p>
+                                <p className="text-xs text-muted-foreground line-clamp-1">{shop.store_description}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{categoryMap[shop.storeCategoryId] || "Other"}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Phone className="h-3 w-3 text-muted-foreground" />
+                                {shop.store_phone || "-"}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3 text-red-500" />
+                                {shop.store_total_favourites || 0}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleOpenModal(shop)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteShop(shop.id)}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
               <div className="mt-4 text-sm text-muted-foreground">
                 Showing {filteredShops.length} of {totalShops} shops
               </div>
@@ -519,7 +431,7 @@ export default function ShopManagementPage() {
 
       {/* Shop Management Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingShop ? "Edit Shop" : "Create New Shop"}</DialogTitle>
             <DialogDescription>
@@ -532,75 +444,42 @@ export default function ShopManagementPage() {
               <Input
                 id="name"
                 placeholder="Enter shop name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={formData.store_name}
+                onChange={(e) => setFormData({ ...formData, store_name: e.target.value })}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="address">Address *</Label>
-              <Input
-                id="address"
-                placeholder="Enter shop address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="contact">Contact *</Label>
-                <Input
-                  id="contact"
-                  placeholder="+1 (555) 123-4567"
-                  value={formData.contact}
-                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="shop@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <Select value={formData.storeCategoryId} onValueChange={(value) => setFormData({ ...formData, storeCategoryId: value })}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="phone">Phone *</Label>
+                <Input
+                  id="phone"
+                  placeholder="9876543210"
+                  value={formData.store_phone}
+                  onChange={(e) => setFormData({ ...formData, store_phone: e.target.value })}
+                />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 placeholder="Enter shop description"
                 rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={formData.store_description}
+                onChange={(e) => setFormData({ ...formData, store_description: e.target.value })}
               />
             </div>
           </div>
@@ -610,8 +489,9 @@ export default function ShopManagementPage() {
             </Button>
             <Button 
               onClick={handleSaveShop}
-              disabled={!formData.name || !formData.address || !formData.contact || !formData.email || !formData.category}
+              disabled={!formData.store_name || !formData.storeCategoryId || !formData.store_phone || isSaving}
             >
+              {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {editingShop ? "Update Shop" : "Create Shop"}
             </Button>
           </DialogFooter>

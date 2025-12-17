@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -20,14 +20,23 @@ import { Plus, Loader2, Upload, X } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { servicesService } from "@/lib/services/services.service"
+import { serviceCategoriesService, ServiceCategory } from "@/lib/services/service-categories.service"
 
-export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
+interface PostServiceModalProps {
+  trigger?: React.ReactNode
+  onServiceCreated?: (service: any) => void
+}
+
+export function PostServiceModal({ trigger, onServiceCreated }: PostServiceModalProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
+    categoryId: "",
     price: "",
     location: "",
     description: "",
@@ -35,14 +44,34 @@ export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { t } = useLanguage()
 
+  // Load categories when modal opens
+  useEffect(() => {
+    if (open && categories.length === 0) {
+      loadCategories()
+    }
+  }, [open])
+
+  const loadCategories = async () => {
+    setLoadingCategories(true)
+    try {
+      const data = await serviceCategoriesService.getAll()
+      setCategories(data)
+    } catch (error) {
+      console.error('[PostService] Failed to load categories:', error)
+      toast.error("Failed to load categories")
+    } finally {
+      setLoadingCategories(false)
+    }
+  }
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     
     if (!formData.title.trim()) {
       newErrors.title = "Title is required"
     }
-    if (!formData.category) {
-      newErrors.category = "Category is required"
+    if (!formData.categoryId) {
+      newErrors.categoryId = "Category is required"
     }
     if (!formData.price || parseFloat(formData.price) <= 0) {
       newErrors.price = "Valid price is required"
@@ -67,7 +96,27 @@ export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
     setLoading(true)
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const userId = localStorage.getItem('user_id')
+      const categoryId = Number(formData.categoryId)
+      
+      if (!categoryId || isNaN(categoryId)) {
+        toast.error("Please select a valid category")
+        setLoading(false)
+        return
+      }
+
+      const payload = {
+        service_title: formData.title,
+        service_description: formData.description,
+        service_category_id: categoryId,
+        service_price: parseFloat(formData.price),
+        service_location: formData.location || "Remote",
+        service_datetime: new Date().toISOString(),
+        status_id: 1,
+        user_id: Number(userId) || 1,
+      }
+      
+      const newService = await servicesService.create(payload)
       
       toast.success("Service posted successfully!", {
         description: "Your service is now visible to the community."
@@ -76,16 +125,22 @@ export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
       setOpen(false)
       setFormData({
         title: "",
-        category: "",
+        categoryId: "",
         price: "",
         location: "",
         description: "",
       })
       setImagePreview(null)
       setErrors({})
-    } catch (error) {
+      
+      // Notify parent component about the new service
+      if (onServiceCreated && newService) {
+        onServiceCreated(newService)
+      }
+    } catch (error: any) {
+      console.error('Failed to create service:', error)
       toast.error("Failed to post service", {
-        description: "Please try again later."
+        description: error.message || "Please try again later."
       })
     } finally {
       setLoading(false)
@@ -178,26 +233,30 @@ export function PostServiceModal({ trigger }: { trigger?: React.ReactNode }) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="category">{t("services.post.category")} *</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, category: value })
-                  if (errors.category) setErrors({ ...errors, category: "" })
+              <Label htmlFor="categoryId">{t("services.post.category")} *</Label>
+              <select
+                id="categoryId"
+                value={formData.categoryId}
+                onChange={(e) => {
+                  setFormData({ ...formData, categoryId: e.target.value })
+                  if (errors.categoryId) setErrors({ ...errors, categoryId: "" })
                 }}
-                disabled={loading}
+                disabled={loading || loadingCategories}
+                className={cn(
+                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
+                  errors.categoryId ? "border-destructive" : ""
+                )}
               >
-                <SelectTrigger className={errors.category ? "border-destructive" : ""}>
-                  <SelectValue placeholder={t("services.post.categoryPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">{t("services.post.category.home")}</SelectItem>
-                  <SelectItem value="pets">{t("services.post.category.pets")}</SelectItem>
-                  <SelectItem value="tech">{t("services.post.category.tech")}</SelectItem>
-                  <SelectItem value="education">{t("services.post.category.education")}</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.category && <span className="text-xs text-destructive">{errors.category}</span>}
+                <option value="">{loadingCategories ? "Loading..." : "Select category"}</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={String(cat.id)}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              {errors.categoryId && <span className="text-xs text-destructive">{errors.categoryId}</span>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="price">{t("services.post.price")} *</Label>
