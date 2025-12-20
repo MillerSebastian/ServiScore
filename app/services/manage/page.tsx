@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { servicesService, Service, CreateServiceDto } from "@/lib/services/services.service"
+import { servicesService, Service, CreateServiceDto, UpdateServiceDto } from "@/lib/services/services.service"
 import { serviceCategoriesService, ServiceCategory } from "@/lib/services/service-categories.service"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
@@ -60,9 +60,14 @@ import {
   Filter,
   ArrowUpDown,
   Loader2,
+  Upload,
+  X
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
-
+import { auth } from "@/lib/firebase"
+import { toast } from "sonner"
+import { authService } from "@/lib/services/auth.service"
+import { useRouter } from "next/navigation"
 
 // Status mapping
 const statusMap: Record<number, string> = {
@@ -72,6 +77,7 @@ const statusMap: Record<number, string> = {
 }
 
 export default function ServiceManagementPage() {
+  const router = useRouter()
   const [services, setServices] = useState<Service[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -82,6 +88,9 @@ export default function ServiceManagementPage() {
   const [filterCategory, setFilterCategory] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
   const [sortBy, setSortBy] = useState("title")
+
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // Form state matching backend fields
   const [formData, setFormData] = useState({
@@ -110,12 +119,30 @@ export default function ServiceManagementPage() {
       setCategories(categoriesData)
     } catch (error) {
       console.error('Failed to fetch data:', error)
+      toast.error('Failed to fetch data')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleOpenModal = (service?: Service) => {
+  const handleOpenModal = async (service?: Service) => {
+    // Check verification before allowing create/edit
+    const currentUser = auth.currentUser
+    if (!currentUser) {
+      toast.error("Please log in first")
+      router.push("/login")
+      return
+    }
+
+    const profile = await authService.getUserProfile(currentUser.uid)
+    if (!profile?.isVerified) {
+      toast.error("Verificación requerida", {
+        description: "Debes completar el proceso de verificación para gestionar servicios"
+      })
+      router.push("/profile")
+      return
+    }
+
     if (service) {
       setEditingService(service)
       setFormData({
@@ -127,6 +154,7 @@ export default function ServiceManagementPage() {
         service_datetime: service.service_datetime ? service.service_datetime.slice(0, 16) : "",
         status_id: String(service.status_id || "1"),
       })
+      setImagePreview(null) // Reset preview for edit (could fetch existing image if URL stored)
     } else {
       setEditingService(null)
       setFormData({
@@ -138,7 +166,9 @@ export default function ServiceManagementPage() {
         service_datetime: "",
         status_id: "1",
       })
+      setImagePreview(null)
     }
+    setImageFile(null)
     setIsModalOpen(true)
   }
 
@@ -154,63 +184,108 @@ export default function ServiceManagementPage() {
       service_datetime: "",
       status_id: "1",
     })
+    setImageFile(null)
+    setImagePreview(null)
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   const handleSaveService = async () => {
     try {
       setIsSaving(true)
-      const userId = localStorage.getItem('user_id')
-      
-      const payload: CreateServiceDto = {
+      const currentUser = auth.currentUser
+
+      if (!currentUser) {
+        toast.error('You must be logged in')
+        return
+      }
+
+      let imageUrl = null;
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('folder', 'services');
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) throw new Error('Image upload failed');
+        const data = await res.json();
+        imageUrl = data.secure_url;
+      }
+
+      const payload: CreateServiceDto | UpdateServiceDto = {
         service_title: formData.service_title,
         service_description: formData.service_description,
-        service_category_id: Number(formData.service_category_id),
+        service_category_id: formData.service_category_id,
         service_price: Number(formData.service_price),
         service_location: formData.service_location,
         service_datetime: formData.service_datetime ? new Date(formData.service_datetime).toISOString() : new Date().toISOString(),
         status_id: Number(formData.status_id),
-        user_id: Number(userId) || 1,
+        user_id: currentUser.uid,
+        // Add image URL to payload if we had a field for it in DTO (assuming we might adding it later or mixing)
+        // For now, services DTO doesn't explicitly have image_url, but Firestore allows extra fields.
+        // We'll add it to payload as any.
+      }
+
+      if (imageUrl) {
+        (payload as any).image_url = imageUrl;
       }
 
       if (editingService) {
         await servicesService.update(editingService.id, payload)
+        toast.success('Service updated')
       } else {
-        await servicesService.create(payload)
+        await servicesService.create(payload as CreateServiceDto)
+        toast.success('Service created')
       }
-      
+
       await fetchData()
       handleCloseModal()
     } catch (error) {
       console.error('Failed to save service:', error)
-      alert('Failed to save service')
+      toast.error('Failed to save service')
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleDeleteService = async (id: number) => {
+  const handleDeleteService = async (id: string) => {
     if (confirm("Are you sure you want to delete this service?")) {
       try {
         await servicesService.delete(id)
+        toast.success('Service deleted')
         await fetchData()
       } catch (error) {
         console.error('Failed to delete service:', error)
-        alert('Failed to delete service')
+        toast.error('Failed to delete service')
       }
     }
   }
 
   // Build category map from loaded categories
-  const categoryMap: Record<number, string> = categories.reduce((acc, cat) => {
-    acc[cat.id] = cat.name
+  const categoryMap: Record<string, string> = categories.reduce((acc, cat) => {
+    acc[String(cat.id)] = cat.name
     return acc
-  }, {} as Record<number, string>)
+  }, {} as Record<string, string>)
 
   // Filter and sort logic
   const filteredServices = services
     .filter(service => {
       const matchesSearch = service.service_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           service.service_description?.toLowerCase().includes(searchTerm.toLowerCase())
+        service.service_description?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = filterCategory === "all" || String(service.service_category_id) === filterCategory
       const matchesStatus = filterStatus === "all" || String(service.status_id) === filterStatus
       return matchesSearch && matchesCategory && matchesStatus
@@ -430,7 +505,7 @@ export default function ServiceManagementPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant={service.status_id === 1 ? "default" : "secondary"}
                                 className={service.status_id === 1 ? "bg-green-500/10 text-green-700 border-green-500/20" : ""}
                               >
@@ -451,7 +526,7 @@ export default function ServiceManagementPage() {
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     onClick={() => handleDeleteService(service.id)}
                                     className="text-red-600"
                                   >
@@ -486,6 +561,40 @@ export default function ServiceManagementPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+            </div>
+            <div className="grid gap-2">
+              <Label>Service Image</Label>
+              <div className="flex items-center gap-4">
+                <div className="relative h-20 w-20 border rounded-md overflow-hidden bg-muted">
+                  {imagePreview ? (
+                    <>
+                      <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setImageFile(null);
+                        }}
+                        className="absolute top-0 right-0 p-1 bg-black/50 text-white hover:bg-red-500 rounded-bl-md"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                      <Upload className="h-6 w-6" />
+                    </div>
+                  )}
+                </div>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="title">Service Title *</Label>
               <Input
@@ -568,7 +677,7 @@ export default function ServiceManagementPage() {
             <Button variant="outline" onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSaveService}
               disabled={!formData.service_title || !formData.service_category_id || !formData.service_price || !formData.service_location || isSaving}
             >

@@ -20,6 +20,7 @@ import { Plus, Loader2, Upload, X } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { auth } from "@/lib/firebase"
 import { servicesService } from "@/lib/services/services.service"
 import { serviceCategoriesService, ServiceCategory } from "@/lib/services/service-categories.service"
 
@@ -66,7 +67,7 @@ export function PostServiceModal({ trigger, onServiceCreated }: PostServiceModal
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    
+
     if (!formData.title.trim()) {
       newErrors.title = "Title is required"
     }
@@ -94,12 +95,17 @@ export function PostServiceModal({ trigger, onServiceCreated }: PostServiceModal
     }
 
     setLoading(true)
-    
+
     try {
-      const userId = localStorage.getItem('user_id')
-      const categoryId = Number(formData.categoryId)
-      
-      if (!categoryId || isNaN(categoryId)) {
+      const currentUser = auth.currentUser
+
+      if (!currentUser) {
+        toast.error("You must be logged in to post a service")
+        setLoading(false)
+        return
+      }
+
+      if (!formData.categoryId) {
         toast.error("Please select a valid category")
         setLoading(false)
         return
@@ -108,20 +114,20 @@ export function PostServiceModal({ trigger, onServiceCreated }: PostServiceModal
       const payload = {
         service_title: formData.title,
         service_description: formData.description,
-        service_category_id: categoryId,
+        service_category_id: formData.categoryId,
         service_price: parseFloat(formData.price),
         service_location: formData.location || "Remote",
         service_datetime: new Date().toISOString(),
         status_id: 1,
-        user_id: Number(userId) || 1,
+        user_id: currentUser.uid, // Use Firebase UID string
       }
-      
+
       const newService = await servicesService.create(payload)
-      
+
       toast.success("Service posted successfully!", {
         description: "Your service is now visible to the community."
       })
-      
+
       setOpen(false)
       setFormData({
         title: "",
@@ -132,7 +138,7 @@ export function PostServiceModal({ trigger, onServiceCreated }: PostServiceModal
       })
       setImagePreview(null)
       setErrors({})
-      
+
       // Notify parent component about the new service
       if (onServiceCreated && newService) {
         onServiceCreated(newService)

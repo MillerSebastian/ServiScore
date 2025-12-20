@@ -60,6 +60,10 @@ import {
   Heart,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { auth } from "@/lib/firebase"
+import { toast } from "sonner"
+import { authService } from "@/lib/services/auth.service"
+import { useRouter } from "next/navigation"
 
 // Categories mapping (id -> name)
 const categoryMap: Record<number, string> = {
@@ -78,6 +82,7 @@ const categoryMap: Record<number, string> = {
 const categories = Object.entries(categoryMap).map(([id, name]) => ({ id: Number(id), name }))
 
 export default function ShopManagementPage() {
+  const router = useRouter()
   const [shops, setShops] = useState<Store[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -112,7 +117,24 @@ export default function ShopManagementPage() {
     }
   }
 
-  const handleOpenModal = (shop?: Store) => {
+  const handleOpenModal = async (shop?: Store) => {
+    // Check verification before allowing create/edit
+    const currentUser = auth.currentUser
+    if (!currentUser) {
+      toast.error("Please log in first")
+      router.push("/login")
+      return
+    }
+
+    const profile = await authService.getUserProfile(currentUser.uid)
+    if (!profile?.isVerified) {
+      toast.error("Verificación requerida", {
+        description: "Debes completar el proceso de verificación para gestionar tiendas"
+      })
+      router.push("/profile")
+      return
+    }
+
     if (shop) {
       setEditingShop(shop)
       setFormData({
@@ -147,7 +169,7 @@ export default function ShopManagementPage() {
   const handleSaveShop = async () => {
     try {
       setIsSaving(true)
-      
+
       const payload: CreateStoreDto = {
         store_name: formData.store_name,
         store_description: formData.store_description,
@@ -161,7 +183,7 @@ export default function ShopManagementPage() {
       } else {
         await storesService.create(payload)
       }
-      
+
       await fetchShops()
       handleCloseModal()
     } catch (error) {
@@ -188,7 +210,7 @@ export default function ShopManagementPage() {
   const filteredShops = shops
     .filter(shop => {
       const matchesSearch = shop.store_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           shop.store_description?.toLowerCase().includes(searchTerm.toLowerCase())
+        shop.store_description?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = filterCategory === "all" || String(shop.storeCategoryId) === filterCategory
       return matchesSearch && matchesCategory
     })
@@ -404,7 +426,7 @@ export default function ShopManagementPage() {
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     onClick={() => handleDeleteShop(shop.id)}
                                     className="text-red-600"
                                   >
@@ -487,7 +509,7 @@ export default function ShopManagementPage() {
             <Button variant="outline" onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSaveShop}
               disabled={!formData.store_name || !formData.storeCategoryId || !formData.store_phone || isSaving}
             >

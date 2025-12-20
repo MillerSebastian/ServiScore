@@ -13,6 +13,8 @@ import { ServiceCardSkeletonGrid } from "@/components/service-card-skeleton"
 import { useLanguage } from "@/contexts/language-context"
 import { servicesService, Service } from "@/lib/services/services.service"
 import { serviceCategoriesService, ServiceCategory } from "@/lib/services/service-categories.service"
+import { authService } from "@/lib/services/auth.service"
+import { User } from "lucide-react"
 
 // Status mapping
 const statusMap: Record<number, string> = {
@@ -24,6 +26,7 @@ const statusMap: Record<number, string> = {
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [providerData, setProviderData] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filters, setFilters] = useState<FilterState>({
@@ -44,6 +47,23 @@ export default function ServicesPage() {
         ])
         setServices(servicesData)
         setCategories(categoriesData)
+
+        // Fetch provider data for all unique user IDs
+        const uniqueUserIds = [...new Set(servicesData.map(s => s.user_id))]
+        const providers: Record<string, any> = {}
+
+        await Promise.all(
+          uniqueUserIds.map(async (userId) => {
+            try {
+              const profile = await authService.getUserProfile(userId)
+              providers[userId] = profile
+            } catch (error) {
+              console.error(`Failed to fetch provider ${userId}:`, error)
+              providers[userId] = null
+            }
+          })
+        )
+        setProviderData(providers)
       } catch (error) {
         console.error('Failed to fetch data:', error)
       } finally {
@@ -114,7 +134,7 @@ export default function ServicesPage() {
 
   return (
 
-    
+
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-6 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -154,10 +174,11 @@ export default function ServicesPage() {
             filteredServices.map((service) => {
               const category = categoryMap[service.service_category_id] || "Other"
               const status = statusMap[service.status_id] || "Unknown"
-              const dateStr = service.createdAt 
-                ? new Date(service.createdAt).toLocaleDateString() 
+              const dateStr = service.createdAt
+                ? new Date(service.createdAt).toLocaleDateString()
                 : "-"
-              
+              const provider = providerData[service.user_id]
+
               return (
                 <motion.div key={service.id} variants={item}>
                   <Link href={`/services/${service.id}`}>
@@ -165,13 +186,22 @@ export default function ServicesPage() {
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-full overflow-hidden bg-muted border-2 border-white shadow-sm flex items-center justify-center">
-                              <span className="text-lg font-bold text-muted-foreground">
-                                {(service.service_title || "S")[0].toUpperCase()}
-                              </span>
+                            {/* Provider Photo */}
+                            <div className="h-12 w-12 rounded-full overflow-hidden bg-muted border-2 border-white shadow-sm">
+                              {provider?.photoURL ? (
+                                <img
+                                  src={provider.photoURL}
+                                  alt={provider.fullName || 'Provider'}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center">
+                                  <User className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              )}
                             </div>
                             <div>
-                              <p className="font-bold text-foreground">Service #{service.id}</p>
+                              <p className="font-bold text-foreground">{provider?.fullName || 'Provider'}</p>
                               <Badge
                                 variant="secondary"
                                 className="text-[10px] mt-1 bg-pastel-purple/20 text-purple-700 dark:text-purple-400 hover:bg-pastel-purple/30 border-purple-500/20"

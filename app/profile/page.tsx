@@ -6,11 +6,13 @@ import { Star, Briefcase, Settings, LogOut, Camera, BadgeCheck } from "lucide-re
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { authService } from "@/lib/services/auth.stub"
+import { authService } from "@/lib/services/auth.service"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner" // Assuming sonner is used, or I'll use console.log/alert if not sure. I'll use simple alert or console for now if toast isn't obvious, but let's check imports. No toast imported. I'll use standard alert or just state for errors.
+import { toast } from "sonner"
 import SuperUserVerificationModal from "@/components/SuperUserVerificationModal"
 import { SettingsSheet } from "@/components/settings-sheet"
+import { auth } from "@/lib/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 
 export default function ProfilePage() {
   const { t } = useLanguage()
@@ -27,29 +29,29 @@ export default function ProfilePage() {
   const bannerInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const backendToken = localStorage.getItem('access_token')
-        const userId = localStorage.getItem('user_id')
-        console.log('[ProfilePage] backendToken:', backendToken ? 'exists' : 'null')
-        console.log('[ProfilePage] userId:', userId)
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Fetch extended profile from Firestore
+        const profileData = await authService.getUserProfile(firebaseUser.uid);
 
-        if (backendToken && userId) {
-          console.log('[ProfilePage] Fetching profile...')
-          const profile = await authService.getProfile(backendToken)
-          console.log('[ProfilePage] Profile received:', profile)
-          setUser(profile)
-        } else {
-          router.push("/login")
-        }
-      } catch (error) {
-        console.error("Failed to fetch profile", error)
-      } finally {
-        setIsLoading(false)
+        setUser({
+          fullName: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoUrl: firebaseUser.photoURL,
+          // Merge Firestore data (rating, banner, etc) or partial overrides
+          ...profileData,
+          // Defaults if missing in Firestore (should ideally be set on creation, but safety check)
+          rating: profileData?.rating ?? 5.0,
+          completedServices: profileData?.completedServices ?? 0,
+          publishedServices: profileData?.publishedServices ?? [],
+          banner: profileData?.banner ?? null
+        })
+      } else {
+        router.push("/login")
       }
-    }
-
-    fetchProfile()
+      setIsLoading(false)
+    })
+    return () => unsubscribe()
   }, [router])
 
   const handleLogout = async () => {
@@ -71,22 +73,33 @@ export default function ProfilePage() {
 
   const handleProfileFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !user) return
 
-    setUploadingProfile(true)
     try {
-      const token = localStorage.getItem('access_token')
-      if (token) {
-        const updatedUser = await authService.uploadProfilePicture(token, file)
-        setUser(updatedUser)
+      setUploadingProfile(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'profiles')
 
-        // Re-fetch profile to ensure we have the latest data
-        const refreshedProfile = await authService.getProfile(token)
-        setUser(refreshedProfile)
-      }
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!res.ok) throw new Error('Upload failed')
+
+      const data = await res.json()
+      const photoURL = data.secure_url
+
+      // Update Firestore
+      await authService.updateUserProfile(auth.currentUser?.uid!, { photoURL })
+
+      // Update local state
+      setUser((prev: any) => ({ ...prev, photoUrl: photoURL }))
+      toast.success('Profile picture updated')
     } catch (error) {
-      console.error("Failed to upload profile picture", error)
-      alert("Failed to upload profile picture")
+      console.error('Failed to upload profile picture:', error)
+      toast.error('Failed to upload profile picture')
     } finally {
       setUploadingProfile(false)
     }
@@ -94,22 +107,33 @@ export default function ProfilePage() {
 
   const handleBannerFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !user) return
 
-    setUploadingBanner(true)
     try {
-      const token = localStorage.getItem('access_token')
-      if (token) {
-        const updatedUser = await authService.uploadBanner(token, file)
-        setUser(updatedUser)
+      setUploadingBanner(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'banners')
 
-        // Re-fetch profile to ensure we have the latest data
-        const refreshedProfile = await authService.getProfile(token)
-        setUser(refreshedProfile)
-      }
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!res.ok) throw new Error('Upload failed')
+
+      const data = await res.json()
+      const bannerUrl = data.secure_url
+
+      // Update Firestore
+      await authService.updateUserProfile(auth.currentUser?.uid!, { banner: bannerUrl })
+
+      // Update local state
+      setUser((prev: any) => ({ ...prev, banner: bannerUrl }))
+      toast.success('Banner updated')
     } catch (error) {
-      console.error("Failed to upload banner", error)
-      alert("Failed to upload banner")
+      console.error('Failed to upload banner:', error)
+      toast.error('Failed to upload banner')
     } finally {
       setUploadingBanner(false)
     }
@@ -171,8 +195,6 @@ export default function ProfilePage() {
         >
           {(() => {
             const bannerUrl = user.banner
-              ? `${user.banner}${user.banner.includes('?') ? '&' : '?'}t=${Date.now()}`
-              : null
             return bannerUrl ? (
               <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
             ) : (
