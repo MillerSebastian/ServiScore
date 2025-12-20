@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, ShoppingBag, User, Languages, LayoutDashboard } from "lucide-react"
+import { Home, ShoppingBag, User, Languages, LayoutDashboard, Store } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ThemeSelector } from "@/components/theme-selector"
@@ -21,6 +21,7 @@ export function Navbar() {
   const navItems = [
     { href: "/", label: t("nav.home"), icon: Home },
     { href: "/services", label: t("nav.services"), icon: ShoppingBag },
+    { href: "/stores", label: "Stores", icon: Store },
     { href: "/profile", label: t("nav.profile"), icon: User },
   ]
 
@@ -69,7 +70,7 @@ export function Navbar() {
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary flex items-center gap-1",
                   pathname?.startsWith("/dashboard")
-                    ? "text-primary font-bold" 
+                    ? "text-primary font-bold"
                     : "text-muted-foreground"
                 )}
               >
