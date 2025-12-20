@@ -1,5 +1,14 @@
-// Use local API proxy to avoid CORS issues in production
-const BASE_URL = '/api/proxy'
+import { db } from '../firebase'
+import {
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  writeBatch
+} from 'firebase/firestore'
 
 export interface CreateServiceCategoryDto {
   name: string
@@ -12,7 +21,7 @@ export interface UpdateServiceCategoryDto {
 }
 
 export interface ServiceCategory {
-  id: number
+  id: string // Firestore IDs are strings
   name: string
   description?: string
   isActive?: boolean
@@ -20,120 +29,136 @@ export interface ServiceCategory {
   updatedAt?: string
 }
 
-function getAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  }
-}
-
-function requireAuthToken(): string {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  if (!token) {
-    throw new Error('Not authenticated')
-  }
-  return token
-}
+const DEFAULT_CATEGORIES = [
+  { name: "Plumbing", description: "Pipes, faucets, and leaks" },
+  { name: "Electrical", description: "Wiring, lights, and panels" },
+  { name: "Cleaning", description: "Home and office cleaning" },
+  { name: "Landscaping", description: "Garden and lawn care" },
+  { name: "Painting", description: "Interior and exterior painting" },
+  { name: "Carpentry", description: "Woodwork and repairs" },
+  { name: "HVAC", description: "Heating and air conditioning" },
+  { name: "Moving", description: "Relocation assistance" },
+  { name: "Pest Control", description: "Removal of bugs and pests" },
+  { name: "Roofing", description: "Roof repairs and installation" }
+];
 
 class ServiceCategoriesService {
   /**
    * Get all service categories
    */
   async getAll(): Promise<ServiceCategory[]> {
-    const res = await fetch(`${BASE_URL}/service-category`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    })
-    if (!res.ok) {
-      throw new Error(`Failed to fetch service categories: ${res.status}`)
+    try {
+      const querySnapshot = await getDocs(collection(db, "service_categories"));
+      let categories = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ServiceCategory[];
+
+      // Seed if empty
+      if (categories.length === 0) {
+        categories = await this.seedCategories();
+      }
+
+      return categories;
+    } catch (error) {
+      console.error("Error fetching categories: ", error);
+      throw error;
     }
-    const data = await res.json()
-    
-    // Map backend response to our interface (backend uses id_service_category)
-    return data.map((cat: any) => ({
-      id: cat.id_service_category ?? cat.id ?? cat.service_category_id,
-      name: cat.name ?? cat.service_category_name ?? `Category ${cat.id_service_category ?? cat.id}`,
-      description: cat.description ?? cat.service_category_description ?? '',
-      isActive: cat.isActive ?? cat.is_active ?? true,
-      createdAt: cat.createdAt ?? cat.created_at,
-      updatedAt: cat.updatedAt ?? cat.updated_at,
-    }))
+  }
+
+  /**
+   * Seed default categories
+   */
+  async seedCategories(): Promise<ServiceCategory[]> {
+    const batch = writeBatch(db);
+    const newCategories: ServiceCategory[] = [];
+
+    DEFAULT_CATEGORIES.forEach(cat => {
+      const docRef = doc(collection(db, "service_categories"));
+      const payload = {
+        name: cat.name,
+        description: cat.description,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      batch.set(docRef, payload);
+      newCategories.push({ id: docRef.id, ...payload });
+    });
+
+    await batch.commit();
+    return newCategories;
   }
 
   /**
    * Get a service category by ID
    */
-  async getById(id: number | string): Promise<ServiceCategory> {
-    const res = await fetch(`${BASE_URL}/service-category/${id}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    })
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error('Service category not found')
+  async getById(id: string): Promise<ServiceCategory> {
+    try {
+      const docRef = doc(db, "service_categories", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return {
+          id: docSnap.id,
+          ...docSnap.data()
+        } as ServiceCategory;
+      } else {
+        throw new Error("Service category not found");
       }
-      throw new Error(`Failed to fetch service category: ${res.status}`)
+    } catch (error) {
+      console.error("Error fetching category: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Create a new service category (Admin only)
    */
   async create(data: CreateServiceCategoryDto): Promise<ServiceCategory> {
-    const token = requireAuthToken()
-    console.log('[ServiceCategoriesService] Creating category with data:', JSON.stringify(data, null, 2))
-    console.log('[ServiceCategoriesService] Auth token present:', Boolean(token))
-    
-    const res = await fetch(`${BASE_URL}/service-category`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    })
-    
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error('[ServiceCategoriesService] Create error status:', res.status)
-      console.error('[ServiceCategoriesService] Create error response:', errorText)
-      let error: any = {}
-      try {
-        error = JSON.parse(errorText)
-      } catch {}
-      throw new Error(error.message || `Failed to create service category: ${res.status}`)
+    try {
+      const payload = {
+        ...data,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      const docRef = await addDoc(collection(db, "service_categories"), payload);
+      return {
+        id: docRef.id,
+        ...payload
+      } as ServiceCategory;
+    } catch (error) {
+      console.error("Error creating category: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Update an existing service category (Admin only)
    */
-  async update(id: number | string, data: UpdateServiceCategoryDto): Promise<ServiceCategory> {
-    requireAuthToken()
-    const res = await fetch(`${BASE_URL}/service-category/${id}`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}))
-      throw new Error(error.message || `Failed to update service category: ${res.status}`)
+  async update(id: string, data: UpdateServiceCategoryDto): Promise<void> {
+    try {
+      const docRef = doc(db, "service_categories", id);
+      await updateDoc(docRef, {
+        ...data,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error updating category: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Delete (toggle active status) a service category (Admin only)
    */
-  async delete(id: number | string): Promise<void> {
-    requireAuthToken()
-    const res = await fetch(`${BASE_URL}/service-category/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    })
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}))
-      throw new Error(error.message || `Failed to delete service category: ${res.status}`)
+  async delete(id: string): Promise<void> {
+    try {
+      await deleteDoc(doc(db, "service_categories", id));
+    } catch (error) {
+      console.error("Error deleting category: ", error);
+      throw error;
     }
   }
 }

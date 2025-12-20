@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { auth } from "@/lib/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 import { useRouter, usePathname } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -19,27 +21,24 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [authenticated, setAuthenticated] = useState(false)
 
     useEffect(() => {
-        // Check for backend token in localStorage
-        const backendToken = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-        const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null
-        
-        console.log('[AuthGuard] Backend token:', backendToken ? 'exists' : 'null', '| User ID:', userId)
-        
-        // User is authenticated if backend token exists
-        if (backendToken && userId) {
-            setAuthenticated(true)
-            setLoading(false)
-        } else {
-            setAuthenticated(false)
-            setLoading(false)
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log('[AuthGuard] User state changed:', user ? 'Logged In' : 'Logged Out', user?.uid)
 
-            // Check if current route is public
-            const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
+            if (user) {
+                setAuthenticated(true)
+                setLoading(false)
+            } else {
+                setAuthenticated(false)
+                setLoading(false)
 
-            if (!isPublicRoute) {
-                router.push("/login")
+                const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
+                if (!isPublicRoute) {
+                    router.push("/login")
+                }
             }
-        }
+        })
+
+        return () => unsubscribe()
     }, [pathname, router])
 
     if (loading) {
@@ -52,11 +51,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             </div>
         )
     }
-
-    // If not authenticated and on a protected route, we return null (or loading) while redirecting
-    // But since we handle redirect in useEffect, we might render children briefly if we don't block here.
-    // However, the useEffect runs after render. 
-    // If loading is false and not authenticated, and it's NOT a public route, we should probably render nothing or a loader until redirect happens.
 
     const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
     if (!authenticated && !isPublicRoute) {

@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { authService } from "@/lib/services/auth.stub"
+import { authService } from "@/lib/services/auth.service"
 
 interface LoginFormProps {
     onToggle: () => void
@@ -38,9 +38,9 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         setError("")
         console.log('[Login] Starting login with email:', email)
         try {
-            const token = await authService.loginUser(email, password)
-            console.log('[Login] Token received:', token ? 'Yes' : 'No', token)
-            await authService.syncUser(token)
+            const user = await authService.loginUser(email, password)
+            console.log('[Login] User logged in:', user ? 'Yes' : 'No')
+            await authService.syncUser(user)
             console.log('[Login] Sync complete, redirecting to /')
             router.push("/")
         } catch (err: any) {
@@ -55,8 +55,8 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithGoogle()
-            await authService.syncUser(token)
+            const user = await authService.loginWithGoogle()
+            await authService.syncUser(user)
             router.push("/services")
         } catch (err: any) {
             setError(err.message || "Google login failed")
@@ -69,8 +69,8 @@ export function LoginForm({ onToggle }: LoginFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithApple()
-            await authService.syncUser(token)
+            const user = await authService.loginWithApple()
+            await authService.syncUser(user)
             router.push("/services")
         } catch (err: any) {
             setError(err.message || "Apple login failed")

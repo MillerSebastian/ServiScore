@@ -1,16 +1,28 @@
-// Use local API proxy to avoid CORS issues in production
-const BASE_URL = '/api/proxy'
+import { db } from '../firebase'
+import {
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  orderBy
+} from 'firebase/firestore'
 
 export interface CreateStoreDto {
-  storeCategoryId: number
+  storeCategoryId: string
   store_name: string
   store_description: string
   store_phone: string
   store_total_favourites?: number
+  user_id?: string // Added user_id
 }
 
 export interface UpdateStoreDto {
-  storeCategoryId?: number
+  storeCategoryId?: string
   store_name?: string
   store_description?: string
   store_phone?: string
@@ -18,30 +30,16 @@ export interface UpdateStoreDto {
 }
 
 export interface Store {
-  id: number
-  storeCategoryId: number
+  id: string // Firestore ID
+  storeCategoryId: string
   store_name: string
   store_description: string
   store_phone: string
   store_total_favourites?: number
+  user_id?: string
   createdAt?: string
   updatedAt?: string
-}
-
-function getAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  }
-}
-
-function requireAuthToken(): string {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  if (!token) {
-    throw new Error('Not authenticated')
-  }
-  return token
+  image_url?: string;
 }
 
 class StoresService {
@@ -49,89 +47,87 @@ class StoresService {
    * Get all stores
    */
   async getAll(): Promise<Store[]> {
-    const res = await fetch(`${BASE_URL}/stores`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    })
-    if (!res.ok) {
-      throw new Error(`Failed to fetch stores: ${res.status}`)
+    try {
+      const querySnapshot = await getDocs(collection(db, "stores"));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Store[];
+    } catch (error) {
+      console.error("Error fetching stores: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Get a store by ID
    */
-  async getById(id: number | string): Promise<Store> {
-    const res = await fetch(`${BASE_URL}/stores/${id}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    })
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error('Store not found')
+  async getById(id: string): Promise<Store> {
+    try {
+      const docRef = doc(db, "stores", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return {
+          id: docSnap.id,
+          ...docSnap.data()
+        } as Store;
+      } else {
+        throw new Error("Store not found");
       }
-      throw new Error(`Failed to fetch store: ${res.status}`)
+    } catch (error) {
+      console.error("Error fetching store: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Create a new store
    */
   async create(data: CreateStoreDto): Promise<Store> {
-    const token = requireAuthToken()
-    console.log('[StoresService] Creating store with data:', JSON.stringify(data, null, 2))
-    console.log('[StoresService] Auth token present:', Boolean(token))
-    
-    const res = await fetch(`${BASE_URL}/stores`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    })
-    
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error('[StoresService] Create error status:', res.status)
-      console.error('[StoresService] Create error response:', errorText)
-      let error: any = {}
-      try {
-        error = JSON.parse(errorText)
-      } catch {}
-      throw new Error(error.message || `Failed to create store: ${res.status}`)
+    try {
+      const payload = {
+        ...data,
+        store_total_favourites: data.store_total_favourites || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      const docRef = await addDoc(collection(db, "stores"), payload);
+      return {
+        id: docRef.id,
+        ...payload
+      } as Store;
+    } catch (error) {
+      console.error("Error creating store: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Update an existing store
    */
-  async update(id: number | string, data: UpdateStoreDto): Promise<Store> {
-    requireAuthToken()
-    const res = await fetch(`${BASE_URL}/stores/${id}`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}))
-      throw new Error(error.message || `Failed to update store: ${res.status}`)
+  async update(id: string, data: UpdateStoreDto): Promise<void> {
+    try {
+      const docRef = doc(db, "stores", id);
+      await updateDoc(docRef, {
+        ...data,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error updating store: ", error);
+      throw error;
     }
-    return res.json()
   }
 
   /**
    * Delete a store
    */
-  async delete(id: number | string): Promise<void> {
-    requireAuthToken()
-    const res = await fetch(`${BASE_URL}/stores/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    })
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}))
-      throw new Error(error.message || `Failed to delete store: ${res.status}`)
+  async delete(id: string): Promise<void> {
+    try {
+      await deleteDoc(doc(db, "stores", id));
+    } catch (error) {
+      console.error("Error deleting store: ", error);
+      throw error;
     }
   }
 }

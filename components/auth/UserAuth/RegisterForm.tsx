@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { authService } from "@/lib/services/auth.stub"
+import { authService } from "@/lib/services/auth.service"
 
 interface RegisterFormProps {
     onToggle: () => void
@@ -71,9 +71,7 @@ export function RegisterForm({ onToggle, onSuccess }: RegisterFormProps) {
                 fullName: `${firstName} ${lastName}`.trim()
             })
 
-            // Send verification email
-            await authService.sendVerificationEmail(email, password)
-
+            // Auto-login logic could be here, or redirect
             if (onSuccess) {
                 onSuccess()
             } else {
@@ -90,8 +88,8 @@ export function RegisterForm({ onToggle, onSuccess }: RegisterFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithGoogle()
-            await authService.syncUser(token)
+            const user = await authService.loginWithGoogle()
+            await authService.syncUser(user)
             // If registration via social login is successful, we can redirect or show success.
             // Since social login automatically verifies email (usually), we might just redirect.
             // But let's stick to the flow: if it's a new user, maybe we want to show success?
@@ -115,8 +113,8 @@ export function RegisterForm({ onToggle, onSuccess }: RegisterFormProps) {
         setLoading(true)
         setError("")
         try {
-            const token = await authService.loginWithApple()
-            await authService.syncUser(token)
+            const user = await authService.loginWithApple()
+            await authService.syncUser(user)
             router.push("/")
         } catch (err: any) {
             setError(err.message || "Apple login failed")
@@ -233,11 +231,10 @@ export function RegisterForm({ onToggle, onSuccess }: RegisterFormProps) {
                         <div className="space-y-2 mt-2">
                             <div className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground">Password strength:</span>
-                                <span className={`font-medium ${
-                                    passwordStrength < 40 ? "text-red-500" :
+                                <span className={`font-medium ${passwordStrength < 40 ? "text-red-500" :
                                     passwordStrength < 70 ? "text-yellow-500" :
-                                    "text-green-500"
-                                }`}>
+                                        "text-green-500"
+                                    }`}>
                                     {getStrengthText(passwordStrength)}
                                 </span>
                             </div>
