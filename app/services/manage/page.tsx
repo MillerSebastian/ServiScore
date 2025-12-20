@@ -103,30 +103,42 @@ export default function ServiceManagementPage() {
     status_id: "1",
   })
 
-  // Fetch services and categories on mount
+  // Fetch services and categories on mount with realtime updates
   useEffect(() => {
-    fetchData()
-  }, [])
+    let unsubscribeServices: (() => void) | null = null;
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true)
-      const [servicesData, categoriesData] = await Promise.all([
-        servicesService.getAll(),
-        serviceCategoriesService.getAll()
-      ])
-      setServices(servicesData)
-      setCategories(categoriesData)
-    } catch (error) {
-      console.error('Failed to fetch data:', error)
-      toast.error('Failed to fetch data')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    const setupRealtimeListeners = async () => {
+      try {
+        setIsLoading(true);
+
+        // Fetch categories once (they don't change often)
+        const categoriesData = await serviceCategoriesService.getAll();
+        setCategories(categoriesData);
+
+        // Subscribe to services in realtime
+        unsubscribeServices = servicesService.subscribeToServices((servicesData) => {
+          setServices(servicesData);
+          setIsLoading(false);
+        });
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        toast.error('Failed to fetch data');
+        setIsLoading(false);
+      }
+    };
+
+    setupRealtimeListeners();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (unsubscribeServices) {
+        unsubscribeServices();
+      }
+    };
+  }, []);
 
   const handleOpenModal = async (service?: Service) => {
-    // Check verification before allowing create/edit
+    // Check verification before allowing access to dashboard features
     const currentUser = auth.currentUser
     if (!currentUser) {
       toast.error("Please log in first")
@@ -136,8 +148,8 @@ export default function ServiceManagementPage() {
 
     const profile = await authService.getUserProfile(currentUser.uid)
     if (!profile?.isVerified) {
-      toast.error("Verificación requerida", {
-        description: "Debes completar el proceso de verificación para gestionar servicios"
+      toast.error("Verificación requerida para acceder al Dashboard", {
+        description: "Debes completar el proceso de verificación para gestionar servicios desde el Dashboard"
       })
       router.push("/profile")
       return
@@ -154,7 +166,12 @@ export default function ServiceManagementPage() {
         service_datetime: service.service_datetime ? service.service_datetime.slice(0, 16) : "",
         status_id: String(service.status_id || "1"),
       })
-      setImagePreview(null) // Reset preview for edit (could fetch existing image if URL stored)
+      // Set image preview if service has an image
+      if (service.image_url) {
+        setImagePreview(service.image_url)
+      } else {
+        setImagePreview(null)
+      }
     } else {
       setEditingService(null)
       setFormData({
@@ -241,7 +258,7 @@ export default function ServiceManagementPage() {
       }
 
       if (imageUrl) {
-        (payload as any).image_url = imageUrl;
+        payload.image_url = imageUrl;
       }
 
       if (editingService) {
@@ -252,7 +269,7 @@ export default function ServiceManagementPage() {
         toast.success('Service created')
       }
 
-      await fetchData()
+      // No need to call fetchData() - realtime listener will update automatically
       handleCloseModal()
     } catch (error) {
       console.error('Failed to save service:', error)
@@ -267,7 +284,7 @@ export default function ServiceManagementPage() {
       try {
         await servicesService.delete(id)
         toast.success('Service deleted')
-        await fetchData()
+        // No need to call fetchData() - realtime listener will update automatically
       } catch (error) {
         console.error('Failed to delete service:', error)
         toast.error('Failed to delete service')
@@ -463,6 +480,7 @@ export default function ServiceManagementPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-[80px]">Image</TableHead>
                         <TableHead>Title</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Price</TableHead>
@@ -475,13 +493,26 @@ export default function ServiceManagementPage() {
                     <TableBody>
                       {filteredServices.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                             No services found. Try adjusting your filters or create a new service.
                           </TableCell>
                         </TableRow>
                       ) : (
                         filteredServices.map((service) => (
                           <TableRow key={service.id}>
+                            <TableCell>
+                              {service.image_url ? (
+                                <img
+                                  src={service.image_url}
+                                  alt={service.service_title}
+                                  className="h-12 w-12 rounded-md object-cover"
+                                />
+                              ) : (
+                                <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center">
+                                  <Briefcase className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              )}
+                            </TableCell>
                             <TableCell className="font-medium">
                               <div>
                                 <p className="font-semibold">{service.service_title}</p>

@@ -9,7 +9,8 @@ import {
   doc,
   query,
   where,
-  orderBy
+  orderBy,
+  onSnapshot
 } from 'firebase/firestore'
 
 export interface CreateServiceDto {
@@ -21,6 +22,7 @@ export interface CreateServiceDto {
   service_price: number
   service_location: string
   service_datetime: string
+  image_url?: string
 }
 
 export interface UpdateServiceDto {
@@ -32,6 +34,7 @@ export interface UpdateServiceDto {
   service_price?: number
   service_location?: string
   service_datetime?: string
+  image_url?: string
 }
 
 export interface Service {
@@ -44,6 +47,7 @@ export interface Service {
   service_price: number
   service_location: string
   service_datetime: string
+  image_url?: string
   service_is_active?: boolean
   createdAt?: string
   updatedAt?: string
@@ -64,6 +68,27 @@ class ServicesService {
       console.error("Error fetching services: ", error);
       throw error;
     }
+  }
+
+  /**
+   * Subscribe to services in realtime
+   */
+  subscribeToServices(callback: (services: Service[]) => void): () => void {
+    const unsubscribe = onSnapshot(
+      collection(db, "services"),
+      (querySnapshot) => {
+        const services = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Service[];
+        callback(services);
+      },
+      (error) => {
+        console.error("Error in services subscription: ", error);
+      }
+    );
+
+    return unsubscribe;
   }
 
   /**
