@@ -22,7 +22,6 @@ export default function ProfilePage() {
   const [uploadingProfile, setUploadingProfile] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [superOpen, setSuperOpen] = useState(false)
-  const [isSuperVerified, setIsSuperVerified] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const profileInputRef = useRef<HTMLInputElement>(null)
@@ -163,9 +162,14 @@ export default function ProfilePage() {
       <SuperUserVerificationModal
         open={superOpen}
         onOpenChange={setSuperOpen}
-        onFinished={() => {
-          setIsSuperVerified(true)
+        onFinished={async () => {
+          // Refresh user profile from Firestore to get updated isVerified status
+          if (auth.currentUser) {
+            const updatedProfile = await authService.getUserProfile(auth.currentUser.uid)
+            setUser((prev: any) => ({ ...prev, ...updatedProfile }))
+          }
           setSuperOpen(false)
+          toast.success("¡Verificación completada!", { description: "Ahora tienes acceso a todas las funciones" })
         }}
         currentEmail={user?.email}
       />
@@ -238,13 +242,15 @@ export default function ProfilePage() {
               <Button variant="outline" size="sm" className="gap-2 bg-transparent w-full sm:w-auto" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4" /> <span className="hidden sm:inline">{t("profile.settings")}</span><span className="sm:hidden">Ajustes</span>
               </Button>
-              <Button
-                size="sm"
-                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto text-xs sm:text-sm"
-                onClick={() => setSuperOpen(true)}
-              >
-                <BadgeCheck className="h-4 w-4" /> <span className="hidden md:inline">Convertirme en Super Usuario</span><span className="md:hidden">Super Usuario</span>
-              </Button>
+              {!user.isVerified && (
+                <Button
+                  size="sm"
+                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto text-xs sm:text-sm"
+                  onClick={() => setSuperOpen(true)}
+                >
+                  <BadgeCheck className="h-4 w-4" /> <span className="hidden md:inline">Convertirme en Super Usuario</span><span className="md:hidden">Super Usuario</span>
+                </Button>
+              )}
               <Button
                 variant="destructive"
                 size="sm"
@@ -258,7 +264,7 @@ export default function ProfilePage() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               {user.fullName || user.name || "User"}
-              {isSuperVerified && (
+              {user.isVerified && (
                 <span title="Super Usuario Verificado">
                   <BadgeCheck className="h-5 w-5 text-blue-600" />
                 </span>

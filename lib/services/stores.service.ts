@@ -9,7 +9,8 @@ import {
   doc,
   query,
   where,
-  orderBy
+  orderBy,
+  onSnapshot
 } from 'firebase/firestore'
 
 export interface CreateStoreDto {
@@ -18,7 +19,16 @@ export interface CreateStoreDto {
   store_description: string
   store_phone: string
   store_total_favourites?: number
-  user_id?: string // Added user_id
+  user_id?: string
+  profile_image_url?: string
+  banner_image_url?: string
+  gallery_images?: string[]
+  videos?: string[]
+  store_location?: string
+  store_hours?: string
+  rating?: number
+  comments?: Comment[]
+  reviews?: Review[]
 }
 
 export interface UpdateStoreDto {
@@ -27,6 +37,15 @@ export interface UpdateStoreDto {
   store_description?: string
   store_phone?: string
   store_total_favourites?: number
+  profile_image_url?: string
+  banner_image_url?: string
+  gallery_images?: string[]
+  videos?: string[]
+  store_location?: string
+  store_hours?: string
+  rating?: number
+  comments?: Comment[]
+  reviews?: Review[]
 }
 
 export interface Store {
@@ -39,7 +58,55 @@ export interface Store {
   user_id?: string
   createdAt?: string
   updatedAt?: string
-  image_url?: string;
+  image_url?: string // Legacy, keeping for backwards compatibility
+  profile_image_url?: string
+  banner_image_url?: string
+  gallery_images?: string[]
+  videos?: string[]
+  store_location?: string
+  store_hours?: string
+  rating?: number // Average rating
+  comments?: Comment[]
+  reviews?: Review[]
+  userRatings?: UserRating[] // Individual ratings for calculating average
+  reviewCount?: number // Total number of reviews
+}
+
+export interface Comment {
+  id: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  text: string
+  date: string
+  replies?: Reply[]
+  likes?: string[] // Array of user IDs who liked
+  likeCount?: number // Total likes
+}
+
+export interface Reply {
+  id: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  text: string
+  date: string
+}
+
+export interface Review {
+  id: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  rating: number
+  text: string
+  date: string
+}
+
+export interface UserRating {
+  userId: string
+  rating: number
+  date: string
 }
 
 class StoresService {
@@ -79,6 +146,27 @@ class StoresService {
       console.error("Error fetching store: ", error);
       throw error;
     }
+  }
+
+  /**
+   * Subscribe to stores in realtime
+   */
+  subscribeToStores(callback: (stores: Store[]) => void): () => void {
+    const unsubscribe = onSnapshot(
+      collection(db, "stores"),
+      (querySnapshot) => {
+        const stores = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Store[];
+        callback(stores);
+      },
+      (error) => {
+        console.error("Error in stores subscription: ", error);
+      }
+    );
+
+    return unsubscribe;
   }
 
   /**
