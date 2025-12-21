@@ -20,6 +20,8 @@ export interface RegisterData {
 export interface UpdateProfileData {
     displayName?: string;
     photoURL?: string;
+    aboutMe?: string;
+    banner?: string;
 }
 
 export const authService = {
