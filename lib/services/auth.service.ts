@@ -38,6 +38,9 @@ export const authService = {
             // Create user document in Firestore
             await this.createUserDocument(userCredential.user, { fullName: data.fullName });
 
+            // Log Action
+            await this._logSystemAction('Register', userCredential.user);
+
             return userCredential.user;
         } catch (error: any) {
             throw new Error(error.message || 'Registration failed');
@@ -50,6 +53,10 @@ export const authService = {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             // Ensure user doc exists for older users or if creation failed
             await this.createUserDocument(userCredential.user);
+
+            // Log Action
+            await this._logSystemAction('Login', userCredential.user);
+
             return userCredential.user;
         } catch (error: any) {
             throw new Error(error.message || 'Login failed');
@@ -59,6 +66,11 @@ export const authService = {
     // 3. Logout
     async logout() {
         try {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                await this._logSystemAction('Logout', currentUser);
+            }
+
             await signOut(auth);
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('access_token');
@@ -76,6 +88,10 @@ export const authService = {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             await this.createUserDocument(result.user);
+
+            // Log Action
+            await this._logSystemAction('Login (Google)', result.user);
+
             return result.user;
         } catch (error: any) {
             throw new Error(error.message || 'Google login failed');
@@ -88,6 +104,10 @@ export const authService = {
             const provider = new OAuthProvider('apple.com');
             const result = await signInWithPopup(auth, provider);
             await this.createUserDocument(result.user);
+
+            // Log Action
+            await this._logSystemAction('Login (Apple)', result.user);
+
             return result.user;
         } catch (error: any) {
             throw new Error(error.message || 'Apple login failed');
@@ -172,6 +192,44 @@ export const authService = {
     // 11. Placeholder sync
     async syncUser(userOrToken: any) {
         return null;
+    },
+
+    // 12. Internal: Log System Action
+    async _logSystemAction(action: string, user: User) {
+        try {
+            // 1. Get IP
+            let ip = 'Unknown';
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                ip = data.ip;
+            } catch (e) {
+                console.warn('Failed to fetch IP', e);
+            }
+
+            // 2. Get Device Info
+            const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown';
+
+            // 3. Create Log ID
+            const logId = `${Date.now()}_${user.uid}`;
+            const logRef = doc(db, "system_logs", logId);
+
+            // 4. Save to Firestore
+            await setDoc(logRef, {
+                id: logId,
+                action: action,
+                userId: user.uid,
+                userEmail: user.email,
+                userName: user.displayName || 'Unknown',
+                ipAddress: ip,
+                device: userAgent,
+                timestamp: new Date().toISOString(),
+                location: 'Unknown' // Ideally use a refined IP lookup here if needed
+            });
+
+        } catch (error) {
+            console.error("Failed to log system action", error);
+            // Don't block auth flow if logging fails
+        }
     }
 };
-

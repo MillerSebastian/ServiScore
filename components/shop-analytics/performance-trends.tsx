@@ -32,81 +32,112 @@ interface PerformanceTrendsProps {
   dateRange: { from: Date; to: Date }
   location: string
   category: string
+  data?: {
+    views: any[],
+    logs: any[]
+  }
 }
 
-const dailyData = [
-  { date: "Mon", sales: 4200, revenue: 3800, orders: 45 },
-  { date: "Tue", sales: 3800, revenue: 3400, orders: 42 },
-  { date: "Wed", sales: 5100, revenue: 4600, orders: 58 },
-  { date: "Thu", sales: 4600, revenue: 4100, orders: 51 },
-  { date: "Fri", sales: 6200, revenue: 5600, orders: 68 },
-  { date: "Sat", sales: 7800, revenue: 7100, orders: 82 },
-  { date: "Sun", sales: 6500, revenue: 5900, orders: 71 },
-]
-
-const weeklyData = [
-  { week: "Week 1", sales: 28400, revenue: 25600, orders: 312 },
-  { week: "Week 2", sales: 31200, revenue: 28100, orders: 345 },
-  { week: "Week 3", sales: 29800, revenue: 26900, orders: 328 },
-  { week: "Week 4", sales: 35100, revenue: 31600, orders: 387 },
-]
-
-const monthlyData = [
-  { month: "Jan", sales: 98500, revenue: 88650, orders: 1089 },
-  { month: "Feb", sales: 105200, revenue: 94680, orders: 1162 },
-  { month: "Mar", sales: 112800, revenue: 101520, orders: 1246 },
-  { month: "Apr", sales: 108900, revenue: 98010, orders: 1203 },
-  { month: "May", sales: 118400, revenue: 106560, orders: 1308 },
-  { month: "Jun", sales: 124500, revenue: 112050, orders: 1375 },
-]
-
 const chartConfig = {
-  sales: {
-    label: "Sales",
+  views: {
+    label: "Views",
     color: "var(--chart-1)",
   },
-  revenue: {
-    label: "Revenue",
+  favorites: {
+    label: "Favorites",
     color: "var(--chart-2)",
-  },
-  orders: {
-    label: "Orders",
-    color: "var(--chart-3)",
   },
 } satisfies ChartConfig
 
-export function PerformanceTrends({ dateRange, location, category }: PerformanceTrendsProps) {
+export function PerformanceTrends({ dateRange, location, category, data }: PerformanceTrendsProps) {
   const [timeRange, setTimeRange] = React.useState("daily")
   const [chartType, setChartType] = React.useState("line")
 
+  const views = data?.views || []
+  const logs = data?.logs || []
+  const favorites = logs.filter(l => l.action === 'Favorite')
+
   const getData = () => {
-    switch (timeRange) {
-      case "daily":
-        return dailyData
-      case "weekly":
-        return weeklyData
-      case "monthly":
-        return monthlyData
-      default:
-        return dailyData
+    // 1. Initialize buckets
+    const bucketMap: Record<string, { date: string, views: number, favorites: number }> = {}
+
+    // Helper to get key
+    const getKey = (dateStr: string) => {
+      const d = new Date(dateStr)
+      if (timeRange === 'daily') {
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      } else if (timeRange === 'weekly') {
+        // Simple week number approx
+        const start = new Date(dateRange.from)
+        const diff = d.getTime() - start.getTime()
+        const weekNum = Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1
+        return `Week ${weekNum}`
+      } else {
+        return d.toLocaleDateString('en-US', { month: 'short' })
+      }
     }
+
+    // 2. Fill buckets with 0s for the range (optional, for smoother chart)
+    // Checking every day in range is expensive here? No, just 30 days default.
+    // For MVP, just bucket existing data.
+
+    // 3. Process Data
+    const processItems = (items: any[], type: 'views' | 'favorites') => {
+      items.forEach(item => {
+        const key = getKey(item.timestamp)
+        if (!bucketMap[key]) {
+          bucketMap[key] = { date: key, views: 0, favorites: 0 }
+        }
+        bucketMap[key][type]++
+      })
+    }
+
+    processItems(views, 'views')
+    processItems(favorites, 'favorites')
+
+    // 4. Convert to array
+    let result = Object.values(bucketMap)
+
+    // Sort by Date? Since keys are strings, sorting might be tricky without original timestamp.
+    // Better to pre-generate keys for the range.
+    // Quick fix: Just let them be in order of appearance (which is random in Obj) -> No, bad.
+    // Correct approach: Generate all dates in range.
+
+    const filledData: any[] = []
+    let current = new Date(dateRange.from)
+    const end = new Date(dateRange.to)
+
+    while (current <= end) {
+      const key = getKey(current.toISOString())
+      // Check if already added to filledData (duplicates possible if multiple days map to same Week/Month)
+      let existing = filledData.find(d => d.date === key)
+      if (!existing) {
+        existing = { date: key, views: 0, favorites: 0 }
+        filledData.push(existing)
+      }
+
+      // Add counts from our raw bucketMap if any
+      // Actually simpler: Just iterate logs and add to 'existing' if match.
+      // But 'getKey' logic above is same.
+
+      current.setDate(current.getDate() + 1)
+    }
+
+    // Now populate counts
+    const populate = (items: any[], keyName: 'views' | 'favorites') => {
+      items.forEach(item => {
+        const key = getKey(item.timestamp)
+        const entry = filledData.find(d => d.date === key)
+        if (entry) entry[keyName]++
+      })
+    }
+    populate(views, 'views')
+    populate(favorites, 'favorites')
+
+    return filledData
   }
 
-  const getXAxisKey = () => {
-    switch (timeRange) {
-      case "daily":
-        return "date"
-      case "weekly":
-        return "week"
-      case "monthly":
-        return "month"
-      default:
-        return "date"
-    }
-  }
-
-  const data = getData()
-  const xAxisKey = getXAxisKey()
+  const chartData = getData()
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -116,7 +147,7 @@ export function PerformanceTrends({ dateRange, location, category }: Performance
             <div>
               <CardTitle>Performance Trends</CardTitle>
               <CardDescription>
-                Sales, revenue, and order trends over time
+                Views and Favorites over time
               </CardDescription>
             </div>
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
@@ -132,7 +163,7 @@ export function PerformanceTrends({ dateRange, location, category }: Performance
               <ToggleGroup
                 type="single"
                 value={timeRange}
-                onValueChange={setTimeRange}
+                onValueChange={(val) => val && setTimeRange(val)}
                 variant="outline"
                 className="justify-start"
               >
@@ -146,10 +177,10 @@ export function PerformanceTrends({ dateRange, location, category }: Performance
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <ChartContainer config={chartConfig} className="aspect-auto h-[350px] w-full">
             {chartType === "line" ? (
-              <LineChart data={data}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
-                  dataKey={xAxisKey}
+                  dataKey="date"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
@@ -158,36 +189,34 @@ export function PerformanceTrends({ dateRange, location, category }: Performance
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
                 />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
                       labelFormatter={(value) => `${value}`}
-                      formatter={(value) => `$${value.toLocaleString()}`}
                     />
                   }
                 />
                 <Line
                   type="monotone"
-                  dataKey="sales"
-                  stroke="var(--color-sales)"
+                  dataKey="views"
+                  stroke="var(--color-views)"
                   strokeWidth={2}
                   dot={false}
                 />
                 <Line
                   type="monotone"
-                  dataKey="revenue"
-                  stroke="var(--color-revenue)"
+                  dataKey="favorites"
+                  stroke="var(--color-favorites)"
                   strokeWidth={2}
                   dot={false}
                 />
               </LineChart>
             ) : (
-              <BarChart data={data}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
-                  dataKey={xAxisKey}
+                  dataKey="date"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
@@ -196,18 +225,16 @@ export function PerformanceTrends({ dateRange, location, category }: Performance
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
                 />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
                       labelFormatter={(value) => `${value}`}
-                      formatter={(value) => `$${value.toLocaleString()}`}
                     />
                   }
                 />
-                <Bar dataKey="sales" fill="var(--color-sales)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="views" fill="var(--color-views)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="favorites" fill="var(--color-favorites)" radius={[4, 4, 0, 0]} />
               </BarChart>
             )}
           </ChartContainer>

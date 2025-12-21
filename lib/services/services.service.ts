@@ -162,6 +162,51 @@ class ServicesService {
       throw error;
     }
   }
+  /**
+   * Log a service view
+   */
+  async logView(serviceId: string, serviceName: string, device: string) {
+    await this._logServiceActivity('View', { id: serviceId, service_title: serviceName } as Service, 'Service Page View', 0, 'View', { device });
+  }
+
+  // Public: Log Service Activity
+  async logActivity(action: string, service: Service, details: string, value: number, type: string, additionalData: any = {}) {
+    return this._logServiceActivity(action, service, details, value, type, additionalData);
+  }
+
+  // Internal: Log Service Activity
+  private async _logServiceActivity(action: string, service: Service, details: string, value: number, type: string, additionalData: any = {}) {
+    try {
+      // 1. Fetch Location
+      let location = "Unknown Location";
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.city && data.country_name) {
+          location = `${data.city}, ${data.country_name}`;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch location for log", e);
+      }
+
+      // 2. Create Log
+      await addDoc(collection(db, "service_logs"), {
+        action,
+        serviceId: service.id,
+        serviceName: service.service_title,
+        details,
+        value,
+        type,
+        location,
+        device: additionalData.device || 'Desktop',
+        timestamp: new Date().toISOString(),
+        ...additionalData
+      });
+
+    } catch (error) {
+      console.error("Failed to log service activity", error);
+    }
+  }
 }
 
 export const servicesService = new ServicesService()

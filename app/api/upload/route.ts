@@ -27,6 +27,7 @@ export async function POST(request: Request) {
             cloudinary.uploader.upload_stream(
                 {
                     folder: `serviscore/${folder}`,
+                    resource_type: 'auto', // Allow images and videos
                 },
                 (error, result) => {
                     if (error) {
