@@ -13,51 +13,60 @@ import { Badge } from "@/components/ui/badge"
 interface GeographicalMapProps {
   dateRange: { from: Date; to: Date }
   category: string
+  data?: {
+    views: any[]
+  }
 }
 
-const locationData = [
-  { region: "North America", sales: 45200, percentage: 35, growth: "+12.5%", color: "bg-blue-500" },
-  { region: "Europe", sales: 38900, percentage: 30, growth: "+8.3%", color: "bg-green-500" },
-  { region: "Asia", sales: 29400, percentage: 23, growth: "+18.7%", color: "bg-purple-500" },
-  { region: "South America", sales: 8100, percentage: 6, growth: "+5.2%", color: "bg-yellow-500" },
-  { region: "Africa", sales: 4500, percentage: 4, growth: "+15.1%", color: "bg-orange-500" },
-  { region: "Oceania", sales: 2500, percentage: 2, growth: "+3.8%", color: "bg-pink-500" },
-]
+export function GeographicalMap({ dateRange, category, data }: GeographicalMapProps) {
+  const views = data?.views || []
 
-export function GeographicalMap({ dateRange, category }: GeographicalMapProps) {
+  // Aggregate views by location
+  const locationCounts: Record<string, number> = {}
+  views.forEach(v => {
+    const loc = v.location || "Unknown"
+    locationCounts[loc] = (locationCounts[loc] || 0) + 1
+  })
+
+  // Convert to array and sort
+  const locationData = Object.entries(locationCounts)
+    .map(([region, count]) => ({
+      region,
+      sales: count, // Using count as proxy for "sales" or just "visits"
+      percentage: Math.round((count / views.length) * 100) || 0,
+      growth: "+0%", // Mock growth
+      color: "bg-blue-500" // Default color
+    }))
+    .sort((a, b) => b.sales - a.sales)
+    .slice(0, 6) // Top 6
+
+  // Fallback if empty
+  if (locationData.length === 0) {
+    locationData.push({ region: "No Data Yet", sales: 0, percentage: 0, growth: "-", color: "bg-gray-300" })
+  }
+
+  const totalInteractions = locationData.reduce((sum, d) => sum + d.sales, 0)
+
   return (
     <Card className="@container/card">
       <CardHeader>
         <CardTitle>Geographical Performance</CardTitle>
         <CardDescription>
-          Shop performance breakdown by location
+          Store views breakdown by location
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div className="relative h-64 md:h-80 bg-muted/30 rounded-lg overflow-hidden">
+            {/* Simple Map Visualization Placeholder - Static for now as dynamic mapping is complex */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-full h-full max-w-4xl">
+              <div className="relative w-full h-full max-w-4xl opacity-50 grayscale">
+                {/* Re-using existing SVG but deemphasized since dots won't match real data yet */}
                 <svg viewBox="0 0 800 400" className="w-full h-full">
                   <rect x="50" y="50" width="700" height="300" fill="var(--muted)" rx="8" />
-                  
-                  <circle cx="150" cy="150" r="40" fill="var(--primary)" opacity="0.7" />
-                  <text x="150" y="155" textAnchor="middle" fill="var(--primary-foreground)" fontSize="12" fontWeight="bold">NA</text>
-                  
-                  <circle cx="400" cy="140" r="35" fill="var(--primary)" opacity="0.6" />
-                  <text x="400" y="145" textAnchor="middle" fill="var(--primary-foreground)" fontSize="12" fontWeight="bold">EU</text>
-                  
-                  <circle cx="600" cy="180" r="30" fill="var(--primary)" opacity="0.5" />
-                  <text x="600" y="185" textAnchor="middle" fill="var(--primary-foreground)" fontSize="12" fontWeight="bold">AS</text>
-                  
-                  <circle cx="200" cy="280" r="15" fill="var(--primary)" opacity="0.4" />
-                  <text x="200" y="285" textAnchor="middle" fill="var(--primary-foreground)" fontSize="10" fontWeight="bold">SA</text>
-                  
-                  <circle cx="450" cy="260" r="12" fill="var(--primary)" opacity="0.3" />
-                  <text x="450" y="265" textAnchor="middle" fill="var(--primary-foreground)" fontSize="10" fontWeight="bold">AF</text>
-                  
-                  <circle cx="680" cy="300" r="10" fill="var(--primary)" opacity="0.3" />
-                  <text x="680" y="305" textAnchor="middle" fill="var(--primary-foreground)" fontSize="9" fontWeight="bold">OC</text>
+                  <text x="400" y="200" textAnchor="middle" fill="var(--foreground)" fontSize="14">
+                    Map visualization requires geo-coordinates
+                  </text>
                 </svg>
               </div>
             </div>
@@ -72,17 +81,16 @@ export function GeographicalMap({ dateRange, category }: GeographicalMapProps) {
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${location.color}`} />
                   <div>
-                    <p className="font-medium">{location.region}</p>
+                    <p className="font-medium truncate max-w-[120px]" title={location.region}>{location.region}</p>
                     <p className="text-sm text-muted-foreground">
-                      ${location.sales.toLocaleString()}
+                      {location.sales.toLocaleString()} views
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <Badge variant="outline" className="mb-1">
-                    {location.growth}
+                    {location.percentage}%
                   </Badge>
-                  <p className="text-sm font-medium">{location.percentage}%</p>
                 </div>
               </div>
             ))}
@@ -90,9 +98,9 @@ export function GeographicalMap({ dateRange, category }: GeographicalMapProps) {
 
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Total Global Sales</span>
+              <span className="text-muted-foreground">Total Views Logged</span>
               <span className="font-semibold text-lg">
-                ${locationData.reduce((sum, loc) => sum + loc.sales, 0).toLocaleString()}
+                {totalInteractions.toLocaleString()}
               </span>
             </div>
           </div>

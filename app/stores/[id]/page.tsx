@@ -74,6 +74,14 @@ export default function StoreDetailPage() {
           const storeData = await storesService.getById(params.id as string)
           setStore(storeData)
 
+          // Log View
+          try {
+            const device = /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+            await storesService.logView(storeData.id, storeData.store_name, device)
+          } catch (e) {
+            console.error("Failed to log view", e)
+          }
+
           // Check if user has already rated
           if (currentUser && storeData.userRatings) {
             const existingRating = storeData.userRatings.find(r => r.userId === currentUser.uid)
@@ -120,6 +128,16 @@ export default function StoreDetailPage() {
       await storesService.update(store.id, {
         comments: updatedComments as any
       })
+
+      // Log Activity
+      await storesService.logActivity(
+        'Review', // Using 'Review' to match Analytics filter (or 'Comment' if we want to separate)
+        store,
+        `Posted comment: "${commentText.substring(0, 30)}..."`,
+        0,
+        'Review'
+      )
+
       setStore({ ...store, comments: updatedComments })
       setCommentText("")
       toast.success("Comment posted!")
@@ -252,6 +270,15 @@ export default function StoreDetailPage() {
         reviewCount
       })
 
+      // Log Activity
+      await storesService.logActivity(
+        'Review', // Use Review for ratings too for now
+        store,
+        `Rated ${userRating} stars`,
+        userRating,
+        'Rating'
+      )
+
       setStore({
         ...store,
         userRatings: updatedRatings,
@@ -268,9 +295,22 @@ export default function StoreDetailPage() {
     }
   }
 
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    toast.success(isFavorite ? "Removed from favorites" : "Added to favorites")
+  const toggleFavorite = async () => {
+    if (!currentUser || !store) {
+      toast.error("Please log in to favorite")
+      return
+    }
+    const newState = !isFavorite
+    setIsFavorite(newState)
+
+    try {
+      await storesService.toggleFavorite(store.id, currentUser.uid, newState, store.store_name)
+      toast.success(newState ? "Added to favorites" : "Removed from favorites")
+    } catch (e) {
+      console.error("Failed to toggle favorite", e)
+      setIsFavorite(!newState) // Revert on failure
+      toast.error("Failed to update favorite")
+    }
   }
 
   if (isLoading) {

@@ -32,6 +32,14 @@ export default function ServiceDetailPage() {
         const serviceData = await servicesService.getById(params.id as string)
         setService(serviceData)
 
+        // Log View
+        try {
+          const device = /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+          await servicesService.logView(serviceData.id, serviceData.service_title, device)
+        } catch (e) {
+          console.error("Failed to log view", e)
+        }
+
         // Fetch category
         if (serviceData.service_category_id) {
           const categoryData = await serviceCategoriesService.getById(serviceData.service_category_id)

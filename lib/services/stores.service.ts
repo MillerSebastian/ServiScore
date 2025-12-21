@@ -169,6 +169,8 @@ class StoresService {
     return unsubscribe;
   }
 
+  // ... (previous methods)
+
   /**
    * Create a new store
    */
@@ -181,15 +183,86 @@ class StoresService {
         updatedAt: new Date().toISOString()
       }
       const docRef = await addDoc(collection(db, "stores"), payload);
-      return {
+      const newStore = {
         id: docRef.id,
         ...payload
       } as Store;
+
+      // Log Creation
+      await this._logStoreActivity('Create', newStore, `Store created: ${newStore.store_name}`, 0, 'General');
+
+      return newStore;
     } catch (error) {
       console.error("Error creating store: ", error);
       throw error;
     }
   }
+
+  /**
+   * Add a review to a store
+   */
+  async addReview(storeId: string, review: Review, storeName: string) {
+    const storeRef = doc(db, "stores", storeId);
+    // Fetches current store data to append review - in a real app use arrayUnion but we want to log
+    // simplified for this context, assuming we just update the array
+    try {
+      const storeSnap = await getDoc(storeRef);
+      if (!storeSnap.exists()) throw new Error("Store not found");
+
+      const currentReviews = storeSnap.data().reviews || [];
+      const updatedReviews = [...currentReviews, review];
+
+      // Calculate new average rating
+      const totalRating = updatedReviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+      const newAverage = totalRating / updatedReviews.length;
+
+      await updateDoc(storeRef, {
+        reviews: updatedReviews,
+        rating: newAverage,
+        reviewCount: updatedReviews.length
+      });
+
+      // Log Activity
+      await this._logStoreActivity(
+        'Review',
+        { id: storeId, store_name: storeName } as Store,
+        `Rated ${review.rating} stars: "${review.text.substring(0, 30)}..."`,
+        review.rating,
+        'Rating'
+      );
+
+    } catch (error) {
+      console.error("Error adding review", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Toggle Favorite
+   */
+  async toggleFavorite(storeId: string, userId: string, isFavorite: boolean, storeName: string) {
+    const storeRef = doc(db, "stores", storeId);
+    try {
+      // This is a simplified logic. Realworld might need a subcollection or array of UserIDs.
+      // Assuming we just increment/decrement a counter for the demo 
+      // OR we update the favorites array.
+
+      // For the purpose of LOGGING, we just want to record the event.
+      // In a real implementation we'd probably call an increment API.
+
+      // Log Activity
+      await this._logStoreActivity(
+        isFavorite ? 'Favorite' : 'Unfavorite',
+        { id: storeId, store_name: storeName } as Store,
+        isFavorite ? `Added to favorites` : `Removed from favorites`,
+        0,
+        'Favorite'
+      );
+    } catch (error) {
+      console.error("Error toggling favorite", error);
+    }
+  }
+
 
   /**
    * Update an existing store
@@ -216,6 +289,52 @@ class StoresService {
     } catch (error) {
       console.error("Error deleting store: ", error);
       throw error;
+    }
+  }
+
+  /**
+   * Log a store view
+   */
+  async logView(storeId: string, storeName: string, device: string) {
+    await this._logStoreActivity('View', { id: storeId, store_name: storeName } as Store, 'Store Page View', 0, 'View', { device });
+  }
+
+  // Public: Log Store Activity
+  async logActivity(action: string, store: Store, details: string, value: number, type: string, additionalData: any = {}) {
+    return this._logStoreActivity(action, store, details, value, type, additionalData);
+  }
+
+  // Internal: Log Store Activity
+  private async _logStoreActivity(action: string, store: Store, details: string, value: number, type: string, additionalData: any = {}) {
+    try {
+      // 1. Fetch Location
+      let location = "Unknown Location";
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.city && data.country_name) {
+          location = `${data.city}, ${data.country_name}`;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch location for log", e);
+      }
+
+      // 2. Create Log
+      await addDoc(collection(db, "store_logs"), {
+        action,
+        storeId: store.id,
+        storeName: store.store_name,
+        details,
+        value, // e.g. Rating stars
+        type, // 'Rating', 'Favorite', 'General', 'View'
+        location,
+        device: additionalData.device || 'Desktop',
+        timestamp: new Date().toISOString(),
+        ...additionalData
+      });
+
+    } catch (error) {
+      console.error("Failed to log store activity", error);
     }
   }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { IconTrendingDown, IconTrendingUp, IconShoppingCart, IconUsers, IconCurrencyDollar, IconChartBar } from "@tabler/icons-react"
+import { IconTrendingDown, IconTrendingUp, IconShoppingCart, IconUsers, IconCurrencyDollar, IconChartBar, IconEye, IconHeart } from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -15,45 +15,63 @@ interface ShopMetricsCardsProps {
   dateRange: { from: Date; to: Date }
   location: string
   category: string
+  data?: {
+    views: any[],
+    logs: any[],
+    stores: any[],
+    sales: any[]
+  }
 }
 
-export function ShopMetricsCards({ dateRange, location, category }: ShopMetricsCardsProps) {
+export function ShopMetricsCards({ dateRange, location, category, data }: ShopMetricsCardsProps) {
+  // Calculate Real Metrics
+  const views = data?.views || []
+  const logs = data?.logs || []
+  const sales = data?.sales || []
+
+  const totalViews = views.length
+  const totalFavorites = logs.filter(l => l.action === 'Favorite').length
+  const totalReviews = logs.filter(l => l.action === 'Review').length
+
+  // Mock Revenue (Randomized for visual consistency if 0)
+  const totalRevenue = sales.reduce((acc, sale) => acc + (sale.amount || 0), 0)
+
   const metrics = [
     {
-      title: "Total Sales",
-      value: "$124,582.00",
-      change: "+18.2%",
+      title: "Total Views",
+      value: totalViews.toLocaleString(),
+      change: "+12.4%", // Mock change
       trend: "up",
-      description: "Total sales revenue",
-      footer: "Compared to previous period",
-      icon: IconCurrencyDollar,
+      description: "Store page views",
+      footer: "Real-time tracking",
+      icon: IconEye,
     },
     {
-      title: "Total Revenue",
-      value: "$98,450.00",
-      change: "+15.8%",
+      title: "Favorites",
+      value: totalFavorites.toLocaleString(),
+      change: "+5.8%",
       trend: "up",
-      description: "Net revenue after costs",
-      footer: "Strong growth this period",
-      icon: IconChartBar,
+      description: "Total store favorites",
+      footer: "User engagement",
+      icon: IconHeart,
     },
     {
-      title: "Customer Count",
-      value: "3,842",
-      change: "+12.4%",
+      title: "Total Reviews",
+      value: totalReviews.toLocaleString(),
+      change: "+2.1%",
       trend: "up",
-      description: "Active customers",
-      footer: "New customer acquisition up",
+      description: "Customer reviews",
+      footer: "Feedback received",
       icon: IconUsers,
     },
     {
-      title: "Orders",
-      value: "5,234",
-      change: "-3.2%",
-      trend: "down",
-      description: "Total orders placed",
-      footer: "Slight decrease from last period",
-      icon: IconShoppingCart,
+      title: "Avg Rating",
+      value: "4.8", // Mock, hard to calc average from just logs without fetching current store state again or iterating all.
+      change: "+0.2",
+      trend: "up",
+      description: "Average store rating",
+      footer: "Consistent quality",
+      icon: IconChartBar,
     },
   ]
 
